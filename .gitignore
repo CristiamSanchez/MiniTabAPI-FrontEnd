@@ -1,0 +1,28 @@
+# .NET
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Visual Studio Code
+.vscode/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+src/MiniTask.API/appsettings.Development.json
+
+# Logs
+logs/
+*.log
+
+# React / Node
+**/node_modules/
+**/dist/
+coverage/
+
+# Operating system
+.DS_Store
+Thumbs.db
