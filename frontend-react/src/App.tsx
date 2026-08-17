@@ -1,121 +1,78 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <div className="app-shell">
+      <header className="app-header">
+        <a className="brand" href="/">
+          <span className="brand-mark">M</span>
+
+          <span>
+            <strong>MiniTask</strong>
+            <small>Personal task manager</small>
+          </span>
+        </a>
+
+        <span className="status-badge">Frontend ready</span>
+      </header>
+
+      <main className="app-content">
+        <section className="hero-section">
+          <p className="eyebrow">Organize your day</p>
+
+          <h1>Keep your tasks clear and manageable.</h1>
+
+          <p className="hero-description">
+            Create tasks, assign categories and keep track of what
+            you have completed.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        </section>
 
-      <div className="ticks"></div>
+        <section className="dashboard-grid">
+          <article className="panel tasks-panel">
+            <div className="panel-header">
+              <div>
+                <p className="panel-label">Your workspace</p>
+                <h2>Tasks</h2>
+              </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+              <span className="counter-badge">0 tasks</span>
+            </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+            <div className="empty-state">
+              <span className="empty-state-icon">✓</span>
+              <h3>No tasks loaded yet</h3>
+              <p>
+                The task list will appear here when we connect
+                the React application to the API.
+              </p>
+            </div>
+          </article>
+
+          <aside className="panel categories-panel">
+            <div className="panel-header">
+              <div>
+                <p className="panel-label">Organization</p>
+                <h2>Categories</h2>
+              </div>
+            </div>
+
+            <div className="category-placeholder">
+              <span className="category-dot" />
+
+              <p>
+                Categories will be displayed here after the first
+                API request.
+              </p>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <footer className="app-footer">
+        MiniTask · React frontend
+      </footer>
+    </div>
   )
 }
 
