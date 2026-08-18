@@ -9,3 +9,10 @@ export interface TaskItem {
   categoryId: string
   categoryName: string
 }
+
+export interface CreateTaskItemRequest {
+  title: string
+  description: string | null
+  dueDateUtc: string | null
+  categoryId: string
+}

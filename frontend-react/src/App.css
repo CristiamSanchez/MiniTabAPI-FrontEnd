@@ -314,6 +314,113 @@
   text-decoration: line-through;
 }
 
+.create-task-panel {
+  margin-bottom: 24px;
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #dde5f0;
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgb(30 41 59 / 6%);
+}
+
+.create-task-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.create-task-heading h2 {
+  margin: 5px 0 0;
+  font-size: 24px;
+}
+
+.create-task-heading > p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+.create-task-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.form-field--wide {
+  grid-column: 1 / -1;
+}
+
+.form-field > span {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 11px 12px;
+  color: #253047;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  outline: none;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 14%);
+}
+
+.form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 10px 12px;
+  color: #b42318;
+  background: #fff1f0;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-button {
+  padding: 11px 18px;
+  color: #ffffff;
+  background: #4f46e5;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 
 @media (max-width: 760px) {
   .status-badge {
@@ -332,4 +439,21 @@
   .panel {
     padding: 20px;
   }
+
+  .create-task-heading {
+  display: block;
+  }
+
+  .create-task-heading > p {
+    margin-top: 8px;
+  }
+
+  .create-task-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field--wide {
+    grid-column: auto;
+  }
+
 }

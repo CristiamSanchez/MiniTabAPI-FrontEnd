@@ -4,6 +4,8 @@ import { getTaskItems } from './api/taskItemsApi'
 import type { TaskCategory } from './types/taskCategory'
 import type { TaskItem } from './types/taskItem'
 import './App.css'
+import { CreateTaskForm } from './components/CreateTaskForm'
+
 
 function formatDate(value: string | null) {
   if (value === null) {
@@ -72,6 +74,14 @@ function App() {
       ? 'API unavailable'
       : 'API connected'
 
+  function handleTaskCreated(task: TaskItem) {
+  setTasks((currentTasks) => [
+    task,
+    ...currentTasks,
+  ])
+  }
+
+  
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -105,6 +115,16 @@ function App() {
             you have completed.
           </p>
         </section>
+
+        {!isLoading &&
+        !error &&
+        categories.length > 0 && (
+          <CreateTaskForm
+            categories={categories}
+            onTaskCreated={handleTaskCreated}
+          />
+        )}
+
 
         <section className="dashboard-grid">
           <article className="panel tasks-panel">
