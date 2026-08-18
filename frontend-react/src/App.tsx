@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import { getTaskCategories } from './api/taskCategoriesApi'
-import { getTaskItems } from './api/taskItemsApi'
+import {
+  completeTask,
+  getTaskItems,
+  reopenTask,
+} from './api/taskItemsApi'
+
 import type { TaskCategory } from './types/taskCategory'
 import type { TaskItem } from './types/taskItem'
 import './App.css'
 import { CreateTaskForm } from './components/CreateTaskForm'
+
 
 
 function formatDate(value: string | null) {
@@ -24,6 +30,11 @@ function App() {
   const [tasks, setTasks] = useState<TaskItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [updatingTaskId, setUpdatingTaskId] =
+    useState<string | null>(null)
+
+  const [taskActionError, setTaskActionError] =
+    useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -81,6 +92,33 @@ function App() {
   ])
   }
 
+  async function handleTaskStateChange(task: TaskItem) {
+  try {
+    setUpdatingTaskId(task.id)
+    setTaskActionError(null)
+
+    const updatedTask = task.isCompleted
+      ? await reopenTask(task.id)
+      : await completeTask(task.id)
+
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask.id === updatedTask.id
+          ? updatedTask
+          : currentTask,
+      ),
+    )
+  } catch (requestError) {
+    setTaskActionError(
+      requestError instanceof Error
+        ? requestError.message
+        : 'An unexpected error occurred.',
+    )
+  } finally {
+    setUpdatingTaskId(null)
+  }
+}
+
   
   return (
     <div className="app-shell">
@@ -104,6 +142,12 @@ function App() {
           {connectionStatus}
         </span>
       </header>
+
+{taskActionError && (
+  <p className="task-action-error" role="alert">
+    {taskActionError}
+  </p>
+)}
 
       <main className="app-content">
         <section className="hero-section">
@@ -170,42 +214,55 @@ function App() {
               <ul className="task-list">
                 {tasks.map((task) => (
                   <li
-                    className={
-                      task.isCompleted
-                        ? 'task-item task-item--completed'
-                        : 'task-item'
-                    }
-                    key={task.id}
-                  >
-                    <div className="task-content">
-                      <div className="task-heading">
-                        <h3>{task.title}</h3>
+          className={
+            task.isCompleted
+              ? 'task-item task-item--completed'
+              : 'task-item'
+          }
+          key={task.id}
+        >
+          <div className="task-content">
+            <div className="task-heading">
+              <h3>{task.title}</h3>
 
-                        <span
-                          className={
-                            task.isCompleted
-                              ? 'task-state task-state--completed'
-                              : 'task-state task-state--open'
-                          }
-                        >
-                          {task.isCompleted
-                            ? 'Completed'
-                            : 'Open'}
-                        </span>
-                      </div>
+              <span
+                className={
+                  task.isCompleted
+                    ? 'task-state task-state--completed'
+                    : 'task-state task-state--open'
+                }
+              >
+                {task.isCompleted ? 'Completed' : 'Open'}
+              </span>
+            </div>
 
-                      {task.description && (
-                        <p className="task-description">
-                          {task.description}
-                        </p>
-                      )}
+            {task.description && (
+              <p className="task-description">
+                {task.description}
+              </p>
+            )}
 
-                      <div className="task-meta">
-                        <span>{task.categoryName}</span>
-                        <span>{formatDate(task.dueDateUtc)}</span>
-                      </div>
-                    </div>
-                  </li>
+    <div className="task-meta">
+      <span>{task.categoryName}</span>
+      <span>{formatDate(task.dueDateUtc)}</span>
+    </div>
+  </div>
+
+  <button
+    className="secondary-button"
+    type="button"
+    disabled={updatingTaskId === task.id}
+    onClick={() => {
+      void handleTaskStateChange(task)
+    }}
+  >
+    {updatingTaskId === task.id
+      ? 'Updating...'
+      : task.isCompleted
+        ? 'Reopen'
+        : 'Complete'}
+  </button>
+</li>
                 ))}
               </ul>
             )}

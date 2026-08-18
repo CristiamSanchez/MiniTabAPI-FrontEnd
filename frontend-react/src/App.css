@@ -255,6 +255,10 @@
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
 }
 
 .task-item:hover {
@@ -421,6 +425,42 @@
   opacity: 0.65;
 }
 
+.task-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-action-error {
+  margin: 18px 0 0;
+  padding: 11px 13px;
+  color: #b42318;
+  background: #fff1f0;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.secondary-button {
+  align-self: center;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  color: #4338ca;
+  background: #eef2ff;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #e0e7ff;
+}
+
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 
 @media (max-width: 760px) {
   .status-badge {
@@ -454,6 +494,14 @@
 
   .form-field--wide {
     grid-column: auto;
+  }
+
+  .task-item {
+  flex-direction: column;
+  }
+
+  .secondary-button {
+    align-self: stretch;
   }
 
 }
