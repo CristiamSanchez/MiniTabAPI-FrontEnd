@@ -1,26 +1,44 @@
 import { useEffect, useState } from 'react'
 import { getTaskCategories } from './api/taskCategoriesApi'
+import { getTaskItems } from './api/taskItemsApi'
 import type { TaskCategory } from './types/taskCategory'
+import type { TaskItem } from './types/taskItem'
 import './App.css'
+
+function formatDate(value: string | null) {
+  if (value === null) {
+    return 'No due date'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value))
+}
 
 function App() {
   const [categories, setCategories] = useState<TaskCategory[]>([])
+  const [tasks, setTasks] = useState<TaskItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
 
-    async function loadCategories() {
+    async function loadDashboard() {
       try {
         setIsLoading(true)
         setError(null)
 
-        const result = await getTaskCategories(
-          controller.signal,
-        )
+        const [categoryResult, taskResult] =
+          await Promise.all([
+            getTaskCategories(controller.signal),
+            getTaskItems(controller.signal),
+          ])
 
-        setCategories(result)
+        setCategories(categoryResult)
+        setTasks(taskResult)
       } catch (requestError) {
         if (
           requestError instanceof DOMException &&
@@ -41,7 +59,7 @@ function App() {
       }
     }
 
-    void loadCategories()
+    void loadDashboard()
 
     return () => {
       controller.abort()
@@ -80,7 +98,6 @@ function App() {
       <main className="app-content">
         <section className="hero-section">
           <p className="eyebrow">Organize your day</p>
-
           <h1>Keep your tasks clear and manageable.</h1>
 
           <p className="hero-description">
@@ -97,17 +114,81 @@ function App() {
                 <h2>Tasks</h2>
               </div>
 
-              <span className="counter-badge">0 tasks</span>
+              {!isLoading && !error && (
+                <span className="counter-badge">
+                  {tasks.length}{' '}
+                  {tasks.length === 1 ? 'task' : 'tasks'}
+                </span>
+              )}
             </div>
 
-            <div className="empty-state">
-              <span className="empty-state-icon">✓</span>
-              <h3>No tasks loaded yet</h3>
-              <p>
-                Tasks will be connected in the next frontend
-                iteration.
-              </p>
-            </div>
+            {isLoading && (
+              <div className="empty-state">
+                <span className="empty-state-icon">…</span>
+                <h3>Loading tasks</h3>
+                <p>Retrieving your tasks from the API.</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="empty-state" role="alert">
+                <span className="empty-state-icon">!</span>
+                <h3>Tasks could not be loaded</h3>
+                <p>{error}</p>
+              </div>
+            )}
+
+            {!isLoading && !error && tasks.length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">✓</span>
+                <h3>No tasks created yet</h3>
+                <p>Your first task will appear here.</p>
+              </div>
+            )}
+
+            {!isLoading && !error && tasks.length > 0 && (
+              <ul className="task-list">
+                {tasks.map((task) => (
+                  <li
+                    className={
+                      task.isCompleted
+                        ? 'task-item task-item--completed'
+                        : 'task-item'
+                    }
+                    key={task.id}
+                  >
+                    <div className="task-content">
+                      <div className="task-heading">
+                        <h3>{task.title}</h3>
+
+                        <span
+                          className={
+                            task.isCompleted
+                              ? 'task-state task-state--completed'
+                              : 'task-state task-state--open'
+                          }
+                        >
+                          {task.isCompleted
+                            ? 'Completed'
+                            : 'Open'}
+                        </span>
+                      </div>
+
+                      {task.description && (
+                        <p className="task-description">
+                          {task.description}
+                        </p>
+                      )}
+
+                      <div className="task-meta">
+                        <span>{task.categoryName}</span>
+                        <span>{formatDate(task.dueDateUtc)}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </article>
 
           <aside className="panel categories-panel">
@@ -165,9 +246,7 @@ function App() {
                         <strong>{category.name}</strong>
                         <small>
                           Created{' '}
-                          {new Date(
-                            category.createdAtUtc,
-                          ).toLocaleDateString()}
+                          {formatDate(category.createdAtUtc)}
                         </small>
                       </div>
                     </li>
