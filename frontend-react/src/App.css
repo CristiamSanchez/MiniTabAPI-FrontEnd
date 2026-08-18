@@ -461,10 +461,45 @@
   opacity: 0.6;
 }
 
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.danger-button {
+  padding: 8px 12px;
+  color: #b42318;
+  background: #fff1f0;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.danger-button:hover:not(:disabled) {
+  background: #fee4e2;
+}
+
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 
 @media (max-width: 760px) {
   .status-badge {
     display: none;
+  }
+
+  .task-actions {
+  width: 100%;
+  }
+
+  .task-actions button {
+    flex: 1;
   }
 
   .app-content {

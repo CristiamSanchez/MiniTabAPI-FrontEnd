@@ -103,3 +103,26 @@ export function reopenTask(
 ): Promise<TaskItem> {
   return changeTaskState(taskId, 'reopen')
 }
+
+export async function deleteTask(
+  taskId: string,
+): Promise<void> {
+  const response = await fetch(
+    `${apiBaseUrl}/api/tasks/${taskId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiError(
+        response,
+        `Could not delete task. Status: ${response.status}`,
+      ),
+    )
+  }
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getTaskCategories } from './api/taskCategoriesApi'
 import {
   completeTask,
+  deleteTask,
   getTaskItems,
   reopenTask,
 } from './api/taskItemsApi'
@@ -36,9 +37,13 @@ function App() {
   const [taskActionError, setTaskActionError] =
     useState<string | null>(null)
 
+  const [deletingTaskId, setDeletingTaskId] =
+  useState<string | null>(null)
+
   useEffect(() => {
     const controller = new AbortController()
 
+  
     async function loadDashboard() {
       try {
         setIsLoading(true)
@@ -119,6 +124,36 @@ function App() {
   }
 }
 
+  async function handleTaskDelete(task: TaskItem) {
+    const confirmed = window.confirm(
+      `Delete task "${task.title}"?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setDeletingTaskId(task.id)
+      setTaskActionError(null)
+
+      await deleteTask(task.id)
+
+      setTasks((currentTasks) =>
+        currentTasks.filter(
+          (currentTask) => currentTask.id !== task.id,
+        ),
+      )
+    } catch (requestError) {
+      setTaskActionError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'An unexpected error occurred.',
+      )
+    } finally {
+      setDeletingTaskId(null)
+    }
+  }
   
   return (
     <div className="app-shell">
@@ -248,20 +283,41 @@ function App() {
     </div>
   </div>
 
-  <button
-    className="secondary-button"
-    type="button"
-    disabled={updatingTaskId === task.id}
-    onClick={() => {
-      void handleTaskStateChange(task)
-    }}
-  >
-    {updatingTaskId === task.id
-      ? 'Updating...'
-      : task.isCompleted
-        ? 'Reopen'
-        : 'Complete'}
-  </button>
+  <div className="task-actions">
+    <button
+      className="secondary-button"
+      type="button"
+      disabled={
+        updatingTaskId === task.id ||
+        deletingTaskId === task.id
+      }
+      onClick={() => {
+        void handleTaskStateChange(task)
+      }}
+    >
+      {updatingTaskId === task.id
+        ? 'Updating...'
+        : task.isCompleted
+          ? 'Reopen'
+          : 'Complete'}
+    </button>
+
+    <button
+      className="danger-button"
+      type="button"
+      disabled={
+        updatingTaskId === task.id ||
+        deletingTaskId === task.id
+      }
+      onClick={() => {
+        void handleTaskDelete(task)
+      }}
+    >
+      {deletingTaskId === task.id
+        ? 'Deleting...'
+        : 'Delete'}
+    </button>
+  </div>
 </li>
                 ))}
               </ul>
