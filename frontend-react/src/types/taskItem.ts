@@ -16,3 +16,6 @@ export interface CreateTaskItemRequest {
   dueDateUtc: string | null
   categoryId: string
 }
+export type UpdateTaskItemRequest =
+  CreateTaskItemRequest
+  

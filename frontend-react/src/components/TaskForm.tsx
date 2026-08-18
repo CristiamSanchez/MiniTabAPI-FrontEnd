@@ -1,18 +1,40 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { createTaskItem } from '../api/taskItemsApi'
+import {
+  createTaskItem,
+  updateTaskItem,
+} from '../api/taskItemsApi'
 import type { TaskCategory } from '../types/taskCategory'
 import type { TaskItem } from '../types/taskItem'
 
-interface CreateTaskFormProps {
+interface TaskFormProps {
   categories: TaskCategory[]
-  onTaskCreated: (task: TaskItem) => void
+  taskToEdit: TaskItem | null
+  onTaskSaved: (task: TaskItem) => void
+  onCancelEdit: () => void
 }
 
-export function CreateTaskForm({
+function toDateTimeLocal(value: string | null) {
+  if (value === null) {
+    return ''
+  }
+
+  const date = new Date(value)
+  const timezoneOffset = date.getTimezoneOffset()
+
+  return new Date(
+    date.getTime() - timezoneOffset * 60_000,
+  )
+    .toISOString()
+    .slice(0, 16)
+}
+
+export function TaskForm({
   categories,
-  onTaskCreated,
-}: CreateTaskFormProps) {
+  taskToEdit,
+  onTaskSaved,
+  onCancelEdit,
+}: TaskFormProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -21,6 +43,24 @@ export function CreateTaskForm({
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isEditing = taskToEdit !== null
+
+  useEffect(() => {
+    if (taskToEdit !== null) {
+      setTitle(taskToEdit.title)
+      setDescription(taskToEdit.description ?? '')
+      setDueDate(toDateTimeLocal(taskToEdit.dueDateUtc))
+      setCategoryId(taskToEdit.categoryId)
+    } else {
+      setTitle('')
+      setDescription('')
+      setDueDate('')
+      setCategoryId(categories[0]?.id ?? '')
+    }
+
+    setError(null)
+  }, [taskToEdit, categories])
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -41,7 +81,7 @@ export function CreateTaskForm({
       setIsSubmitting(true)
       setError(null)
 
-      const createdTask = await createTaskItem({
+      const request = {
         title,
         description:
           description.trim().length > 0
@@ -52,13 +92,19 @@ export function CreateTaskForm({
             ? new Date(dueDate).toISOString()
             : null,
         categoryId,
-      })
+      }
 
-      onTaskCreated(createdTask)
+      const savedTask = isEditing
+        ? await updateTaskItem(taskToEdit.id, request)
+        : await createTaskItem(request)
 
-      setTitle('')
-      setDescription('')
-      setDueDate('')
+      onTaskSaved(savedTask)
+
+      if (!isEditing) {
+        setTitle('')
+        setDescription('')
+        setDueDate('')
+      }
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -74,12 +120,19 @@ export function CreateTaskForm({
     <section className="create-task-panel">
       <div className="create-task-heading">
         <div>
-          <p className="panel-label">New item</p>
-          <h2>Create a task</h2>
+          <p className="panel-label">
+            {isEditing ? 'Update item' : 'New item'}
+          </p>
+
+          <h2>
+            {isEditing ? 'Edit task' : 'Create a task'}
+          </h2>
         </div>
 
         <p>
-          Add something you want to complete.
+          {isEditing
+            ? 'Modify the selected task.'
+            : 'Add something you want to complete.'}
         </p>
       </div>
 
@@ -96,7 +149,9 @@ export function CreateTaskForm({
             maxLength={150}
             placeholder="Example: Study React components"
             required
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) =>
+              setTitle(event.target.value)
+            }
           />
         </label>
 
@@ -154,12 +209,27 @@ export function CreateTaskForm({
         )}
 
         <div className="form-actions">
+          {isEditing && (
+            <button
+              className="ghost-button"
+              type="button"
+              disabled={isSubmitting}
+              onClick={onCancelEdit}
+            >
+              Cancel
+            </button>
+          )}
+
           <button
             className="primary-button"
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Create task'}
+            {isSubmitting
+              ? 'Saving...'
+              : isEditing
+                ? 'Save changes'
+                : 'Create task'}
           </button>
         </div>
       </form>

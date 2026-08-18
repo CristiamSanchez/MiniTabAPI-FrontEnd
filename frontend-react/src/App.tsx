@@ -10,7 +10,7 @@ import {
 import type { TaskCategory } from './types/taskCategory'
 import type { TaskItem } from './types/taskItem'
 import './App.css'
-import { CreateTaskForm } from './components/CreateTaskForm'
+import { TaskForm } from './components/TaskForm'
 
 
 
@@ -39,6 +39,10 @@ function App() {
 
   const [deletingTaskId, setDeletingTaskId] =
   useState<string | null>(null)
+
+  const [taskToEdit, setTaskToEdit] =
+  useState<TaskItem | null>(null)
+
 
   useEffect(() => {
     const controller = new AbortController()
@@ -90,12 +94,35 @@ function App() {
       ? 'API unavailable'
       : 'API connected'
 
-  function handleTaskCreated(task: TaskItem) {
-  setTasks((currentTasks) => [
-    task,
-    ...currentTasks,
-  ])
-  }
+  function handleTaskSaved(savedTask: TaskItem) {
+  setTasks((currentTasks) => {
+    const taskAlreadyExists = currentTasks.some(
+      (task) => task.id === savedTask.id,
+    )
+
+    if (!taskAlreadyExists) {
+      return [savedTask, ...currentTasks]
+    }
+
+    return currentTasks.map((task) =>
+      task.id === savedTask.id
+        ? savedTask
+        : task,
+    )
+  })
+
+  setTaskToEdit(null)
+}
+
+function handleTaskEdit(task: TaskItem) {
+  setTaskActionError(null)
+  setTaskToEdit(task)
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
 
   async function handleTaskStateChange(task: TaskItem) {
   try {
@@ -153,6 +180,9 @@ function App() {
     } finally {
       setDeletingTaskId(null)
     }
+    if (taskToEdit?.id === task.id) {
+      setTaskToEdit(null)
+    }
   }
   
   return (
@@ -198,9 +228,11 @@ function App() {
         {!isLoading &&
         !error &&
         categories.length > 0 && (
-          <CreateTaskForm
+          <TaskForm
             categories={categories}
-            onTaskCreated={handleTaskCreated}
+            taskToEdit={taskToEdit}
+            onTaskSaved={handleTaskSaved}
+            onCancelEdit={() => setTaskToEdit(null)}
           />
         )}
 
@@ -302,6 +334,18 @@ function App() {
           : 'Complete'}
     </button>
 
+        <button
+        className="secondary-button"
+        type="button"
+        disabled={
+          updatingTaskId === task.id ||
+          deletingTaskId === task.id
+        }
+        onClick={() => handleTaskEdit(task)}
+      >
+        Edit
+      </button>
+
     <button
       className="danger-button"
       type="button"
@@ -312,10 +356,12 @@ function App() {
       onClick={() => {
         void handleTaskDelete(task)
       }}
+      
     >
       {deletingTaskId === task.id
         ? 'Deleting...'
         : 'Delete'}
+        
     </button>
   </div>
 </li>

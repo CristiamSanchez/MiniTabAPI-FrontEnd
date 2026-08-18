@@ -1,6 +1,7 @@
 import type {
   CreateTaskItemRequest,
   TaskItem,
+  UpdateTaskItemRequest,
 } from '../types/taskItem'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
@@ -65,6 +66,35 @@ export async function createTaskItem(
 
   return response.json() as Promise<TaskItem>
 }
+
+export async function updateTaskItem(
+  taskId: string,
+  request: UpdateTaskItemRequest,
+): Promise<TaskItem> {
+  const response = await fetch(
+    `${apiBaseUrl}/api/tasks/${taskId}`,
+    {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiError(
+        response,
+        `Could not update task. Status: ${response.status}`,
+      ),
+    )
+  }
+
+  return response.json() as Promise<TaskItem>
+}
+
 
 async function changeTaskState(
   taskId: string,
