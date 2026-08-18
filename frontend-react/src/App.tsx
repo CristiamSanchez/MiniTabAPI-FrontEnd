@@ -1,6 +1,59 @@
+import { useEffect, useState } from 'react'
+import { getTaskCategories } from './api/taskCategoriesApi'
+import type { TaskCategory } from './types/taskCategory'
 import './App.css'
 
 function App() {
+  const [categories, setCategories] = useState<TaskCategory[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadCategories() {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const result = await getTaskCategories(
+          controller.signal,
+        )
+
+        setCategories(result)
+      } catch (requestError) {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === 'AbortError'
+        ) {
+          return
+        }
+
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : 'An unexpected error occurred.',
+        )
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadCategories()
+
+    return () => {
+      controller.abort()
+    }
+  }, [])
+
+  const connectionStatus = isLoading
+    ? 'Connecting...'
+    : error
+      ? 'API unavailable'
+      : 'API connected'
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -13,7 +66,15 @@ function App() {
           </span>
         </a>
 
-        <span className="status-badge">Frontend ready</span>
+        <span
+          className={
+            error
+              ? 'status-badge status-badge--error'
+              : 'status-badge'
+          }
+        >
+          {connectionStatus}
+        </span>
       </header>
 
       <main className="app-content">
@@ -43,8 +104,8 @@ function App() {
               <span className="empty-state-icon">✓</span>
               <h3>No tasks loaded yet</h3>
               <p>
-                The task list will appear here when we connect
-                the React application to the API.
+                Tasks will be connected in the next frontend
+                iteration.
               </p>
             </div>
           </article>
@@ -55,16 +116,64 @@ function App() {
                 <p className="panel-label">Organization</p>
                 <h2>Categories</h2>
               </div>
+
+              {!isLoading && !error && (
+                <span className="counter-badge">
+                  {categories.length}
+                </span>
+              )}
             </div>
 
-            <div className="category-placeholder">
-              <span className="category-dot" />
+            {isLoading && (
+              <div className="category-placeholder">
+                <span className="category-dot" />
+                <p>Loading categories...</p>
+              </div>
+            )}
 
-              <p>
-                Categories will be displayed here after the first
-                API request.
-              </p>
-            </div>
+            {error && (
+              <div
+                className="category-placeholder error-message"
+                role="alert"
+              >
+                <span className="category-dot" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            {!isLoading &&
+              !error &&
+              categories.length === 0 && (
+                <div className="category-placeholder">
+                  <span className="category-dot" />
+                  <p>No categories have been created yet.</p>
+                </div>
+              )}
+
+            {!isLoading &&
+              !error &&
+              categories.length > 0 && (
+                <ul className="category-list">
+                  {categories.map((category) => (
+                    <li
+                      className="category-item"
+                      key={category.id}
+                    >
+                      <span className="category-dot" />
+
+                      <div>
+                        <strong>{category.name}</strong>
+                        <small>
+                          Created{' '}
+                          {new Date(
+                            category.createdAtUtc,
+                          ).toLocaleDateString()}
+                        </small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
           </aside>
         </section>
       </main>

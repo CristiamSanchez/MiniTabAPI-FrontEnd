@@ -195,6 +195,51 @@
   font-size: 13px;
 }
 
+.status-badge--error {
+  color: #b42318;
+  background: #fee4e2;
+}
+
+.category-list {
+  display: grid;
+  gap: 10px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+}
+
+.category-item strong,
+.category-item small {
+  display: block;
+}
+
+.category-item strong {
+  color: #253047;
+  font-size: 14px;
+}
+
+.category-item small {
+  margin-top: 3px;
+  color: #718096;
+  font-size: 12px;
+}
+
+.error-message {
+  color: #b42318;
+  background: #fff1f0;
+}
+
+
 @media (max-width: 760px) {
   .status-badge {
     display: none;
