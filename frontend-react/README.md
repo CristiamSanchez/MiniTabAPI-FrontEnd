@@ -1,32 +1,228 @@
-# React + TypeScript + Vite
+# MiniTask React Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React and TypeScript frontend for the MiniTask task management application.
 
-Currently, two official plugins are available:
+This application consumes the MiniTask ASP.NET Core API and provides a responsive interface for managing tasks and categories.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+For complete backend, database, and project setup instructions, see the [main README](../README.md).
 
-## React Compiler
+## Technologies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript 6
+- Vite 8
+- Oxlint
+- CSS
+- Browser Fetch API
 
-## Expanding the Oxlint configuration
+## Features
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### Tasks
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- Load tasks from the API.
+- Create tasks.
+- Edit title, description, due date, and category.
+- Mark tasks as completed.
+- Reopen completed tasks.
+- Delete tasks with confirmation.
+- Update the interface without reloading the page.
+
+### Categories
+
+- Load categories from the API.
+- Create categories.
+- Rename categories.
+- Delete unused categories.
+- Display backend conflict messages when a category contains tasks.
+- Update associated task labels after a category is renamed.
+
+### Interface states
+
+- Initial loading state.
+- API connection status.
+- Empty task and category states.
+- Form submission states.
+- Validation and backend errors.
+- Responsive layout for desktop and mobile screens.
+
+## Project structure
+
+```text
+frontend-react/
+├── public/
+├── src/
+│   ├── api/
+│   │   ├── taskCategoriesApi.ts
+│   │   └── taskItemsApi.ts
+│   ├── components/
+│   │   ├── CategoryManager.tsx
+│   │   └── TaskForm.tsx
+│   ├── types/
+│   │   ├── taskCategory.ts
+│   │   └── taskItem.ts
+│   ├── App.css
+│   ├── App.tsx
+│   ├── index.css
+│   └── main.tsx
+├── .env.example
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Responsibilities
+
+- `api/`: HTTP communication with the .NET API.
+- `components/`: reusable user-interface components.
+- `types/`: TypeScript representations of API contracts.
+- `App.tsx`: application state and coordination.
+- `App.css`: component and layout styles.
+- `index.css`: global styles and normalization.
+- `main.tsx`: React application entry point.
+
+## Environment configuration
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.development.local
+```
+
+Default configuration:
+
+```env
+VITE_API_BASE_URL=http://localhost:5281
+```
+
+Only variables beginning with `VITE_` are exposed to frontend code.
+
+Do not place database passwords, API secrets, or private credentials in frontend environment variables. Browser users can inspect all values included in a frontend application.
+
+## Install dependencies
+
+From `frontend-react`:
+
+```bash
+npm install
+```
+
+The repository root includes an `.nvmrc` file. From the project root, the expected Node.js version can be installed with:
+
+```bash
+nvm install
+nvm use
+```
+
+## Run in development
+
+Ensure PostgreSQL and the .NET API are running first.
+
+From `frontend-react`:
+
+```bash
+npm run dev
+```
+
+Or from the repository root:
+
+```bash
+npm --prefix frontend-react run dev
+```
+
+Default address:
+
+```text
+http://localhost:5173
+```
+
+## Validate the frontend
+
+### Lint
+
+```bash
+npm run lint
+```
+
+### Production build
+
+```bash
+npm run build
+```
+
+From the repository root:
+
+```bash
+npm --prefix frontend-react run lint
+npm --prefix frontend-react run build
+```
+
+Production files are generated inside:
+
+```text
+frontend-react/dist/
+```
+
+The `dist` directory is ignored by Git because it can be regenerated.
+
+## React concepts demonstrated
+
+- Functional components.
+- Props.
+- `useState`.
+- `useEffect`.
+- Controlled forms.
+- Conditional rendering.
+- List rendering with `map`.
+- Immutable updates with `map` and `filter`.
+- Asynchronous event handlers.
+- Parallel API loading with `Promise.all`.
+- Request cancellation with `AbortController`.
+- Shared forms for create and edit operations.
+- Type-only TypeScript imports.
+- Environment variables with Vite.
+
+## API integration
+
+The frontend consumes the following resource groups:
+
+```text
+/api/categories
+/api/tasks
+```
+
+Requests use the browser `fetch` API. Non-successful HTTP responses are converted into errors and displayed in the interface.
+
+The frontend expects the API to run on:
+
+```text
+http://localhost:5281
+```
+
+and the API CORS policy must allow:
+
+```text
+http://localhost:5173
+```
+
+## Important behavior
+
+A category containing tasks cannot be deleted.
+
+The backend returns:
+
+```text
+409 Conflict
+```
+
+The frontend displays the returned problem detail without removing the category from local state.
+
+## Planned improvements
+
+- Task filtering.
+- Search.
+- Pagination.
+- Automated component tests.
+- End-to-end tests.
+- Toast notifications.
+- Improved accessibility.
+- Production deployment.
