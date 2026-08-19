@@ -35,12 +35,6 @@ public sealed class TaskCategoryRepository(
             .ToListAsync(cancellationToken);
     }
 
-    public async Task SaveChangesAsync(
-        CancellationToken cancellationToken = default)
-    {
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
    public Task<TaskCategory?> GetByIdAsync(
     Guid id,
     CancellationToken cancellationToken = default)
@@ -50,11 +44,26 @@ public sealed class TaskCategoryRepository(
             cancellationToken);
     }
 
+    public Task<bool> HasTasksAsync(
+        Guid categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return dbContext.TaskItems
+            .AsNoTracking()
+            .AnyAsync(
+                task => task.CategoryId == categoryId,
+                cancellationToken);
+    }
+
     public void Remove(TaskCategory category)
     {
         dbContext.TaskCategories.Remove(category);
     }
     
-
+    public async Task SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 
 }

@@ -8,9 +8,13 @@ internal sealed class FakeTaskCategoryRepository
 {
     private readonly List<TaskCategory> _categories = [];
 
+    private readonly HashSet<Guid> _categoryIdsWithTasks = [];
+
     public int AddCallCount { get; private set; }
 
     public int SaveChangesCallCount { get; private set; }
+
+    public int RemoveCallCount { get; private set; }
 
     public Task<bool> ExistsByNameAsync(
         string name,
@@ -61,8 +65,22 @@ internal sealed class FakeTaskCategoryRepository
         return Task.FromResult(category);
     }
 
+    public Task<bool> HasTasksAsync(
+    Guid categoryId,
+    CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(
+            _categoryIdsWithTasks.Contains(categoryId));
+    }
+
+    public void MarkAsInUse(Guid categoryId)
+    {
+        _categoryIdsWithTasks.Add(categoryId);
+    }
+
     public void Remove(TaskCategory category)
     {
+        RemoveCallCount++;
         _categories.Remove(category);
     }
 

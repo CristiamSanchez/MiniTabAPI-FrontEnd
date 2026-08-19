@@ -107,8 +107,8 @@ public sealed class TaskCategoryService(
     }
 
     public async Task<bool> DeleteAsync(
-    Guid id,
-    CancellationToken cancellationToken = default)
+        Guid id,
+        CancellationToken cancellationToken = default)
     {
         var category = await repository.GetByIdAsync(
             id,
@@ -117,6 +117,15 @@ public sealed class TaskCategoryService(
         if (category is null)
         {
             return false;
+        }
+
+        var hasTasks = await repository.HasTasksAsync(
+            id,
+            cancellationToken);
+
+        if (hasTasks)
+        {
+            throw new TaskCategoryInUseException(id);
         }
 
         repository.Remove(category);

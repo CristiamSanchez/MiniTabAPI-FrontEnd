@@ -86,4 +86,59 @@ public sealed class TaskCategoryServiceTests
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task DeleteAsync_WhenCategoryDoesNotExist_ShouldReturnFalse()
+    {
+        var repository = new FakeTaskCategoryRepository();
+        var service = new TaskCategoryService(repository);
+
+        var deleted = await service.DeleteAsync(Guid.NewGuid());
+
+        Assert.False(deleted);
+        Assert.Equal(0, repository.RemoveCallCount);
+        Assert.Equal(0, repository.SaveChangesCallCount);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenCategoryHasTasks_ShouldThrow()
+    {
+        var repository = new FakeTaskCategoryRepository();
+        var service = new TaskCategoryService(repository);
+
+        var category = await service.CreateAsync(
+            new CreateTaskCategoryRequest("Work"));
+
+        repository.MarkAsInUse(category.Id);
+
+        var exception =
+            await Assert.ThrowsAsync<TaskCategoryInUseException>(
+                () => service.DeleteAsync(category.Id));
+
+        Assert.Contains("contains tasks", exception.Message);
+        Assert.Equal(0, repository.RemoveCallCount);
+        Assert.Equal(1, repository.SaveChangesCallCount);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenCategoryHasNoTasks_ShouldDelete()
+    {
+        var repository = new FakeTaskCategoryRepository();
+        var service = new TaskCategoryService(repository);
+
+        var category = await service.CreateAsync(
+            new CreateTaskCategoryRequest("Temporary"));
+
+        var deleted = await service.DeleteAsync(category.Id);
+
+        Assert.True(deleted);
+        Assert.Equal(1, repository.RemoveCallCount);
+        Assert.Equal(2, repository.SaveChangesCallCount);
+
+        var result = await service.GetByIdAsync(category.Id);
+
+        Assert.Null(result);
+    }
+
+
 }

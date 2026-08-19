@@ -22,5 +22,8 @@ public interface ITaskCategoryRepository
     Task SaveChangesAsync(
         CancellationToken cancellationToken = default);
 
+    Task<bool> HasTasksAsync(
+    Guid categoryId,
+    CancellationToken cancellationToken = default);
     void Remove(TaskCategory category);
 }

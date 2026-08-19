@@ -146,25 +146,40 @@ public sealed class TaskCategoriesController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(
         StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(
         Guid id,
         CancellationToken cancellationToken)
     {
-        var deleted = await service.DeleteAsync(
-            id,
-            cancellationToken);
-
-        if (!deleted)
+        try
         {
-            return NotFound(new ProblemDetails
+            var deleted = await service.DeleteAsync(
+                id,
+                cancellationToken);
+
+            if (!deleted)
             {
-                Title = "Task category not found",
-                Detail = $"Task category '{id}' was not found.",
-                Status = StatusCodes.Status404NotFound
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Task category not found",
+                    Detail =
+                        $"Task category '{id}' was not found.",
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+
+            return NoContent();
+        }
+        catch (TaskCategoryInUseException exception)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Task category is in use",
+                Detail = exception.Message,
+                Status = StatusCodes.Status409Conflict
             });
         }
-
-        return NoContent();
     }
 
 }
