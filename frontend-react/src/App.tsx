@@ -11,6 +11,7 @@ import type { TaskCategory } from './types/taskCategory'
 import type { TaskItem } from './types/taskItem'
 import './App.css'
 import { TaskForm } from './components/TaskForm'
+import { CategoryManager } from './components/CategoryManager'
 
 
 
@@ -42,6 +43,17 @@ function App() {
 
   const [taskToEdit, setTaskToEdit] =
   useState<TaskItem | null>(null)
+
+  function handleCategoryCreated(
+  category: TaskCategory,
+) {
+  setCategories((currentCategories) =>
+    [...currentCategories, category].sort(
+      (first, second) =>
+        first.name.localeCompare(second.name),
+    ),
+  )
+}
 
 
   useEffect(() => {
@@ -376,6 +388,12 @@ function handleTaskEdit(task: TaskItem) {
                 <p className="panel-label">Organization</p>
                 <h2>Categories</h2>
               </div>
+              {!isLoading && !error && (
+                <CategoryManager
+                  onCategoryCreated={handleCategoryCreated}
+                />
+              )}
+
 
               {!isLoading && !error && (
                 <span className="counter-badge">

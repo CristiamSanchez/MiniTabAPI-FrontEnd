@@ -3,3 +3,10 @@ export interface TaskCategory {
   name: string
   createdAtUtc: string
 }
+
+export interface CreateTaskCategoryRequest {
+  name: string
+}
+
+export type UpdateTaskCategoryRequest =
+  CreateTaskCategoryRequest

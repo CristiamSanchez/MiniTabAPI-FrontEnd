@@ -46,21 +46,34 @@ export function TaskForm({
 
   const isEditing = taskToEdit !== null
 
-  useEffect(() => {
-    if (taskToEdit !== null) {
-      setTitle(taskToEdit.title)
-      setDescription(taskToEdit.description ?? '')
-      setDueDate(toDateTimeLocal(taskToEdit.dueDateUtc))
-      setCategoryId(taskToEdit.categoryId)
-    } else {
-      setTitle('')
-      setDescription('')
-      setDueDate('')
-      setCategoryId(categories[0]?.id ?? '')
+useEffect(() => {
+  if (taskToEdit !== null) {
+    setTitle(taskToEdit.title)
+    setDescription(taskToEdit.description ?? '')
+    setDueDate(toDateTimeLocal(taskToEdit.dueDateUtc))
+    setCategoryId(taskToEdit.categoryId)
+  } else {
+    setTitle('')
+    setDescription('')
+    setDueDate('')
+  }
+
+  setError(null)
+}, [taskToEdit])
+
+useEffect(() => {
+  setCategoryId((currentCategoryId) => {
+    const categoryStillExists = categories.some(
+      (category) => category.id === currentCategoryId,
+    )
+
+    if (categoryStillExists) {
+      return currentCategoryId
     }
 
-    setError(null)
-  }, [taskToEdit, categories])
+    return categories[0]?.id ?? ''
+  })
+}, [categories])
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
