@@ -6,14 +6,11 @@ import {
   getTaskItems,
   reopenTask,
 } from './api/taskItemsApi'
-
+import { CategoryManager } from './components/CategoryManager'
+import { TaskForm } from './components/TaskForm'
 import type { TaskCategory } from './types/taskCategory'
 import type { TaskItem } from './types/taskItem'
 import './App.css'
-import { TaskForm } from './components/TaskForm'
-import { CategoryManager } from './components/CategoryManager'
-
-
 
 function formatDate(value: string | null) {
   if (value === null) {
@@ -28,38 +25,33 @@ function formatDate(value: string | null) {
 }
 
 function App() {
-  const [categories, setCategories] = useState<TaskCategory[]>([])
-  const [tasks, setTasks] = useState<TaskItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [categories, setCategories] =
+    useState<TaskCategory[]>([])
+
+  const [tasks, setTasks] =
+    useState<TaskItem[]>([])
+
+  const [isLoading, setIsLoading] =
+    useState(true)
+
+  const [error, setError] =
+    useState<string | null>(null)
+
   const [updatingTaskId, setUpdatingTaskId] =
+    useState<string | null>(null)
+
+  const [deletingTaskId, setDeletingTaskId] =
     useState<string | null>(null)
 
   const [taskActionError, setTaskActionError] =
     useState<string | null>(null)
 
-  const [deletingTaskId, setDeletingTaskId] =
-  useState<string | null>(null)
-
   const [taskToEdit, setTaskToEdit] =
-  useState<TaskItem | null>(null)
-
-  function handleCategoryCreated(
-  category: TaskCategory,
-) {
-  setCategories((currentCategories) =>
-    [...currentCategories, category].sort(
-      (first, second) =>
-        first.name.localeCompare(second.name),
-    ),
-  )
-}
-
+    useState<TaskItem | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
 
-  
     async function loadDashboard() {
       try {
         setIsLoading(true)
@@ -106,62 +98,108 @@ function App() {
       ? 'API unavailable'
       : 'API connected'
 
-  function handleTaskSaved(savedTask: TaskItem) {
-  setTasks((currentTasks) => {
-    const taskAlreadyExists = currentTasks.some(
-      (task) => task.id === savedTask.id,
-    )
-
-    if (!taskAlreadyExists) {
-      return [savedTask, ...currentTasks]
-    }
-
-    return currentTasks.map((task) =>
-      task.id === savedTask.id
-        ? savedTask
-        : task,
-    )
-  })
-
-  setTaskToEdit(null)
-}
-
-function handleTaskEdit(task: TaskItem) {
-  setTaskActionError(null)
-  setTaskToEdit(task)
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
-}
-
-  async function handleTaskStateChange(task: TaskItem) {
-  try {
-    setUpdatingTaskId(task.id)
-    setTaskActionError(null)
-
-    const updatedTask = task.isCompleted
-      ? await reopenTask(task.id)
-      : await completeTask(task.id)
-
-    setTasks((currentTasks) =>
-      currentTasks.map((currentTask) =>
-        currentTask.id === updatedTask.id
-          ? updatedTask
-          : currentTask,
+  function handleCategoryCreated(
+    category: TaskCategory,
+  ) {
+    setCategories((currentCategories) =>
+      [...currentCategories, category].sort(
+        (first, second) =>
+          first.name.localeCompare(second.name),
       ),
     )
-  } catch (requestError) {
-    setTaskActionError(
-      requestError instanceof Error
-        ? requestError.message
-        : 'An unexpected error occurred.',
-    )
-  } finally {
-    setUpdatingTaskId(null)
   }
-}
+
+  function handleCategoryUpdated(
+    updatedCategory: TaskCategory,
+  ) {
+    setCategories((currentCategories) =>
+      currentCategories
+        .map((category) =>
+          category.id === updatedCategory.id
+            ? updatedCategory
+            : category,
+        )
+        .sort((first, second) =>
+          first.name.localeCompare(second.name),
+        ),
+    )
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.categoryId === updatedCategory.id
+          ? {
+              ...task,
+              categoryName: updatedCategory.name,
+            }
+          : task,
+      ),
+    )
+  }
+
+  function handleCategoryDeleted(categoryId: string) {
+    setCategories((currentCategories) =>
+      currentCategories.filter(
+        (category) => category.id !== categoryId,
+      ),
+    )
+  }
+
+  function handleTaskSaved(savedTask: TaskItem) {
+    setTasks((currentTasks) => {
+      const taskAlreadyExists = currentTasks.some(
+        (task) => task.id === savedTask.id,
+      )
+
+      if (!taskAlreadyExists) {
+        return [savedTask, ...currentTasks]
+      }
+
+      return currentTasks.map((task) =>
+        task.id === savedTask.id
+          ? savedTask
+          : task,
+      )
+    })
+
+    setTaskToEdit(null)
+  }
+
+  function handleTaskEdit(task: TaskItem) {
+    setTaskActionError(null)
+    setTaskToEdit(task)
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }
+
+  async function handleTaskStateChange(task: TaskItem) {
+    try {
+      setUpdatingTaskId(task.id)
+      setTaskActionError(null)
+
+      const updatedTask = task.isCompleted
+        ? await reopenTask(task.id)
+        : await completeTask(task.id)
+
+      setTasks((currentTasks) =>
+        currentTasks.map((currentTask) =>
+          currentTask.id === updatedTask.id
+            ? updatedTask
+            : currentTask,
+        ),
+      )
+    } catch (requestError) {
+      setTaskActionError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'An unexpected error occurred.',
+      )
+    } finally {
+      setUpdatingTaskId(null)
+    }
+  }
 
   async function handleTaskDelete(task: TaskItem) {
     const confirmed = window.confirm(
@@ -180,9 +218,14 @@ function handleTaskEdit(task: TaskItem) {
 
       setTasks((currentTasks) =>
         currentTasks.filter(
-          (currentTask) => currentTask.id !== task.id,
+          (currentTask) =>
+            currentTask.id !== task.id,
         ),
       )
+
+      if (taskToEdit?.id === task.id) {
+        setTaskToEdit(null)
+      }
     } catch (requestError) {
       setTaskActionError(
         requestError instanceof Error
@@ -192,11 +235,8 @@ function handleTaskEdit(task: TaskItem) {
     } finally {
       setDeletingTaskId(null)
     }
-    if (taskToEdit?.id === task.id) {
-      setTaskToEdit(null)
-    }
   }
-  
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -220,15 +260,10 @@ function handleTaskEdit(task: TaskItem) {
         </span>
       </header>
 
-{taskActionError && (
-  <p className="task-action-error" role="alert">
-    {taskActionError}
-  </p>
-)}
-
       <main className="app-content">
         <section className="hero-section">
           <p className="eyebrow">Organize your day</p>
+
           <h1>Keep your tasks clear and manageable.</h1>
 
           <p className="hero-description">
@@ -238,16 +273,15 @@ function handleTaskEdit(task: TaskItem) {
         </section>
 
         {!isLoading &&
-        !error &&
-        categories.length > 0 && (
-          <TaskForm
-            categories={categories}
-            taskToEdit={taskToEdit}
-            onTaskSaved={handleTaskSaved}
-            onCancelEdit={() => setTaskToEdit(null)}
-          />
-        )}
-
+          !error &&
+          categories.length > 0 && (
+            <TaskForm
+              categories={categories}
+              taskToEdit={taskToEdit}
+              onTaskSaved={handleTaskSaved}
+              onCancelEdit={() => setTaskToEdit(null)}
+            />
+          )}
 
         <section className="dashboard-grid">
           <article className="panel tasks-panel">
@@ -260,140 +294,171 @@ function handleTaskEdit(task: TaskItem) {
               {!isLoading && !error && (
                 <span className="counter-badge">
                   {tasks.length}{' '}
-                  {tasks.length === 1 ? 'task' : 'tasks'}
+                  {tasks.length === 1
+                    ? 'task'
+                    : 'tasks'}
                 </span>
               )}
             </div>
 
+            {taskActionError && (
+              <p
+                className="task-action-error"
+                role="alert"
+              >
+                {taskActionError}
+              </p>
+            )}
+
             {isLoading && (
               <div className="empty-state">
-                <span className="empty-state-icon">…</span>
+                <span className="empty-state-icon">
+                  …
+                </span>
                 <h3>Loading tasks</h3>
                 <p>Retrieving your tasks from the API.</p>
               </div>
             )}
 
             {error && (
-              <div className="empty-state" role="alert">
-                <span className="empty-state-icon">!</span>
+              <div
+                className="empty-state"
+                role="alert"
+              >
+                <span className="empty-state-icon">
+                  !
+                </span>
                 <h3>Tasks could not be loaded</h3>
                 <p>{error}</p>
               </div>
             )}
 
-            {!isLoading && !error && tasks.length === 0 && (
-              <div className="empty-state">
-                <span className="empty-state-icon">✓</span>
-                <h3>No tasks created yet</h3>
-                <p>Your first task will appear here.</p>
-              </div>
-            )}
+            {!isLoading &&
+              !error &&
+              tasks.length === 0 && (
+                <div className="empty-state">
+                  <span className="empty-state-icon">
+                    ✓
+                  </span>
+                  <h3>No tasks created yet</h3>
+                  <p>Your first task will appear here.</p>
+                </div>
+              )}
 
-            {!isLoading && !error && tasks.length > 0 && (
-              <ul className="task-list">
-                {tasks.map((task) => (
-                  <li
-          className={
-            task.isCompleted
-              ? 'task-item task-item--completed'
-              : 'task-item'
-          }
-          key={task.id}
-        >
-          <div className="task-content">
-            <div className="task-heading">
-              <h3>{task.title}</h3>
+            {!isLoading &&
+              !error &&
+              tasks.length > 0 && (
+                <ul className="task-list">
+                  {tasks.map((task) => (
+                    <li
+                      className={
+                        task.isCompleted
+                          ? 'task-item task-item--completed'
+                          : 'task-item'
+                      }
+                      key={task.id}
+                    >
+                      <div className="task-content">
+                        <div className="task-heading">
+                          <h3>{task.title}</h3>
 
-              <span
-                className={
-                  task.isCompleted
-                    ? 'task-state task-state--completed'
-                    : 'task-state task-state--open'
-                }
-              >
-                {task.isCompleted ? 'Completed' : 'Open'}
-              </span>
-            </div>
+                          <span
+                            className={
+                              task.isCompleted
+                                ? 'task-state task-state--completed'
+                                : 'task-state task-state--open'
+                            }
+                          >
+                            {task.isCompleted
+                              ? 'Completed'
+                              : 'Open'}
+                          </span>
+                        </div>
 
-            {task.description && (
-              <p className="task-description">
-                {task.description}
-              </p>
-            )}
+                        {task.description && (
+                          <p className="task-description">
+                            {task.description}
+                          </p>
+                        )}
 
-    <div className="task-meta">
-      <span>{task.categoryName}</span>
-      <span>{formatDate(task.dueDateUtc)}</span>
-    </div>
-  </div>
+                        <div className="task-meta">
+                          <span>
+                            {task.categoryName}
+                          </span>
 
-  <div className="task-actions">
-    <button
-      className="secondary-button"
-      type="button"
-      disabled={
-        updatingTaskId === task.id ||
-        deletingTaskId === task.id
-      }
-      onClick={() => {
-        void handleTaskStateChange(task)
-      }}
-    >
-      {updatingTaskId === task.id
-        ? 'Updating...'
-        : task.isCompleted
-          ? 'Reopen'
-          : 'Complete'}
-    </button>
+                          <span>
+                            {formatDate(
+                              task.dueDateUtc,
+                            )}
+                          </span>
+                        </div>
+                      </div>
 
-        <button
-        className="secondary-button"
-        type="button"
-        disabled={
-          updatingTaskId === task.id ||
-          deletingTaskId === task.id
-        }
-        onClick={() => handleTaskEdit(task)}
-      >
-        Edit
-      </button>
+                      <div className="task-actions">
+                        <button
+                          className="secondary-button"
+                          type="button"
+                          disabled={
+                            updatingTaskId === task.id ||
+                            deletingTaskId === task.id
+                          }
+                          onClick={() => {
+                            void handleTaskStateChange(
+                              task,
+                            )
+                          }}
+                        >
+                          {updatingTaskId === task.id
+                            ? 'Updating...'
+                            : task.isCompleted
+                              ? 'Reopen'
+                              : 'Complete'}
+                        </button>
 
-    <button
-      className="danger-button"
-      type="button"
-      disabled={
-        updatingTaskId === task.id ||
-        deletingTaskId === task.id
-      }
-      onClick={() => {
-        void handleTaskDelete(task)
-      }}
-      
-    >
-      {deletingTaskId === task.id
-        ? 'Deleting...'
-        : 'Delete'}
-        
-    </button>
-  </div>
-</li>
-                ))}
-              </ul>
-            )}
+                        <button
+                          className="secondary-button"
+                          type="button"
+                          disabled={
+                            updatingTaskId === task.id ||
+                            deletingTaskId === task.id
+                          }
+                          onClick={() =>
+                            handleTaskEdit(task)
+                          }
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="danger-button"
+                          type="button"
+                          disabled={
+                            updatingTaskId === task.id ||
+                            deletingTaskId === task.id
+                          }
+                          onClick={() => {
+                            void handleTaskDelete(task)
+                          }}
+                        >
+                          {deletingTaskId === task.id
+                            ? 'Deleting...'
+                            : 'Delete'}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
           </article>
 
           <aside className="panel categories-panel">
             <div className="panel-header">
               <div>
-                <p className="panel-label">Organization</p>
+                <p className="panel-label">
+                  Organization
+                </p>
                 <h2>Categories</h2>
               </div>
-              {!isLoading && !error && (
-                <CategoryManager
-                  onCategoryCreated={handleCategoryCreated}
-                />
-              )}
-
 
               {!isLoading && !error && (
                 <span className="counter-badge">
@@ -419,37 +484,20 @@ function handleTaskEdit(task: TaskItem) {
               </div>
             )}
 
-            {!isLoading &&
-              !error &&
-              categories.length === 0 && (
-                <div className="category-placeholder">
-                  <span className="category-dot" />
-                  <p>No categories have been created yet.</p>
-                </div>
-              )}
-
-            {!isLoading &&
-              !error &&
-              categories.length > 0 && (
-                <ul className="category-list">
-                  {categories.map((category) => (
-                    <li
-                      className="category-item"
-                      key={category.id}
-                    >
-                      <span className="category-dot" />
-
-                      <div>
-                        <strong>{category.name}</strong>
-                        <small>
-                          Created{' '}
-                          {formatDate(category.createdAtUtc)}
-                        </small>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+            {!isLoading && !error && (
+              <CategoryManager
+                categories={categories}
+                onCategoryCreated={
+                  handleCategoryCreated
+                }
+                onCategoryUpdated={
+                  handleCategoryUpdated
+                }
+                onCategoryDeleted={
+                  handleCategoryDeleted
+                }
+              />
+            )}
           </aside>
         </section>
       </main>

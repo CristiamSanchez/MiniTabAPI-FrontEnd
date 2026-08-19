@@ -1,6 +1,7 @@
 import type {
   CreateTaskCategoryRequest,
   TaskCategory,
+  UpdateTaskCategoryRequest,
 } from '../types/taskCategory'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
@@ -64,4 +65,55 @@ export async function createTaskCategory(
   }
 
   return response.json() as Promise<TaskCategory>
+}
+
+export async function updateTaskCategory(
+  categoryId: string,
+  request: UpdateTaskCategoryRequest,
+): Promise<TaskCategory> {
+  const response = await fetch(
+    `${apiBaseUrl}/api/categories/${categoryId}`,
+    {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiError(
+        response,
+        `Could not update category. Status: ${response.status}`,
+      ),
+    )
+  }
+
+  return response.json() as Promise<TaskCategory>
+}
+
+export async function deleteTaskCategory(
+  categoryId: string,
+): Promise<void> {
+  const response = await fetch(
+    `${apiBaseUrl}/api/categories/${categoryId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiError(
+        response,
+        `Could not delete category. Status: ${response.status}`,
+      ),
+    )
+  }
 }
