@@ -9,7 +9,12 @@
       </span>
     </a>
 
-    <span class="status-badge">Angular ready</span>
+    <span
+      class="status-badge"
+      [class.status-badge--error]="error() !== null"
+    >
+      {{ connectionStatus() }}
+    </span>
   </header>
 
   <main class="app-content">
@@ -40,8 +45,8 @@
           <h3>No tasks loaded yet</h3>
 
           <p>
-            Tasks will appear here when Angular connects to the
-            MiniTask API.
+            Tasks will appear here during the next Angular
+            iteration.
           </p>
         </div>
       </article>
@@ -53,17 +58,64 @@
             <h2>Categories</h2>
           </div>
 
-          <span class="counter-badge">0</span>
+          @if (!isLoading() && !error()) {
+            <span class="counter-badge">
+              {{ categories().length }}
+            </span>
+          }
         </div>
 
-        <div class="category-placeholder">
-          <span class="category-dot"></span>
+        @if (isLoading()) {
+          <div class="category-placeholder">
+            <span class="category-dot"></span>
+            <p>Loading categories...</p>
+          </div>
+        } @else if (error()) {
+          <div
+            class="category-placeholder category-error"
+            role="alert"
+          >
+            <span class="category-dot"></span>
 
-          <p>
-            Categories will appear here after the first HTTP
-            request.
-          </p>
-        </div>
+            <div>
+              <strong>Categories could not be loaded</strong>
+              <p>{{ error() }}</p>
+
+              <button
+                class="retry-button"
+                type="button"
+                (click)="loadCategories()"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        } @else if (categories().length === 0) {
+          <div class="category-placeholder">
+            <span class="category-dot"></span>
+            <p>No categories have been created yet.</p>
+          </div>
+        } @else {
+          <ul class="category-list">
+            @for (
+              category of categories();
+              track category.id
+            ) {
+              <li class="category-item">
+                <span class="category-dot"></span>
+
+                <div>
+                  <strong>{{ category.name }}</strong>
+
+                  <small>
+                    Created
+                    {{ formatDate(category.createdAtUtc) }}
+                  </small>
+                </div>
+              </li>
+            }
+          </ul>
+        }
       </aside>
     </section>
   </main>
