@@ -46,6 +46,17 @@
       </section>
     }
 
+        @if (
+      !isLoading() &&
+      !error() &&
+      categories().length > 0
+    ) {
+      <app-task-form
+        [categories]="categories()"
+        (taskCreated)="handleTaskCreated($event)"
+      />
+    }
+
     <section class="dashboard-grid">
       <article class="panel tasks-panel">
         <div class="panel-header">

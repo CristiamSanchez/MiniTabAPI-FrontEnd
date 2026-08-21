@@ -11,10 +11,11 @@ import { TaskCategoryService } from './core/services/task-category.service';
 import { TaskItemService } from './core/services/task-item.service';
 import type { TaskCategory } from './core/models/task-category';
 import type { TaskItem } from './core/models/task-item';
+import { TaskForm } from './features/tasks/task-form/task-form';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [TaskForm],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -78,6 +79,15 @@ export class App implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  protected handleTaskCreated(
+  createdTask: TaskItem,
+  ): void {
+    this.tasks.update((currentTasks) => [
+      createdTask,
+      ...currentTasks,
+    ]);
   }
 
   protected formatDate(

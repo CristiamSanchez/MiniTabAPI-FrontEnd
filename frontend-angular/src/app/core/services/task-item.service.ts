@@ -2,7 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import type { TaskItem } from '../models/task-item';
+import type {
+  CreateTaskItemRequest,
+  TaskItem,
+} from '../models/task-item';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +19,15 @@ export class TaskItemService {
   getAll(): Observable<TaskItem[]> {
     return this.http.get<TaskItem[]>(
       this.apiUrl,
+    );
+  }
+
+  create(
+    request: CreateTaskItemRequest,
+  ): Observable<TaskItem> {
+    return this.http.post<TaskItem>(
+      this.apiUrl,
+      request,
     );
   }
 }

@@ -1,0 +1,171 @@
+:host {
+  display: block;
+  margin-bottom: 1.25rem;
+}
+
+.task-form-panel {
+  padding: clamp(1.1rem, 3vw, 1.5rem);
+  background:
+    linear-gradient(
+      135deg,
+      rgb(240 253 250 / 96%),
+      rgb(255 247 237 / 96%)
+    );
+  border: 1px solid #ccfbf1;
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 35px rgb(15 118 110 / 8%);
+}
+
+.form-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-heading h2,
+.form-heading p {
+  margin: 0;
+}
+
+.form-heading h2 {
+  color: #134e4a;
+  font-size: 1.3rem;
+}
+
+.form-heading > p {
+  max-width: 18rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.form-label {
+  margin-bottom: 0.3rem !important;
+  color: #ea580c;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.task-form {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-field {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.form-field--wide,
+.form-error,
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.form-field > span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  color: #0f172a;
+  font: inherit;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.7rem;
+  outline: none;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgb(20 184 166 / 15%);
+}
+
+.field-error,
+.form-error {
+  color: #be123c;
+}
+
+.field-error {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.form-error {
+  padding: 0.75rem;
+  margin: 0;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 0.7rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submit-button {
+  padding: 0.75rem 1.15rem;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  background: #0f766e;
+  border: 0;
+  border-radius: 0.75rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #115e59;
+}
+
+.submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.submit-button:focus-visible {
+  outline: 3px solid rgb(20 184 166 / 30%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .form-heading {
+    flex-direction: column;
+  }
+
+  .task-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field--wide,
+  .form-error,
+  .form-actions {
+    grid-column: auto;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .submit-button {
+    width: 100%;
+  }
+}
