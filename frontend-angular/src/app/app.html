@@ -29,6 +29,23 @@
       </p>
     </section>
 
+    @if (error()) {
+      <section class="dashboard-error" role="alert">
+        <div>
+          <strong>The dashboard could not be loaded</strong>
+          <p>{{ error() }}</p>
+        </div>
+
+        <button
+          class="retry-button"
+          type="button"
+          (click)="loadDashboard()"
+        >
+          Try again
+        </button>
+      </section>
+    }
+
     <section class="dashboard-grid">
       <article class="panel tasks-panel">
         <div class="panel-header">
@@ -37,18 +54,77 @@
             <h2>Tasks</h2>
           </div>
 
-          <span class="counter-badge">0 tasks</span>
+          @if (!isLoading() && !error()) {
+            <span class="counter-badge">
+              {{ tasks().length }}
+              {{ tasks().length === 1 ? 'task' : 'tasks' }}
+            </span>
+          }
         </div>
 
-        <div class="empty-state">
-          <span class="empty-state-icon">✓</span>
-          <h3>No tasks loaded yet</h3>
+        @if (isLoading()) {
+          <div class="empty-state">
+            <span class="empty-state-icon">…</span>
+            <h3>Loading tasks</h3>
+            <p>Retrieving your tasks from the API.</p>
+          </div>
+        } @else if (error()) {
+          <div class="empty-state">
+            <span class="empty-state-icon">!</span>
+            <h3>Tasks are unavailable</h3>
+            <p>Restore the API connection and try again.</p>
+          </div>
+        } @else if (tasks().length === 0) {
+          <div class="empty-state">
+            <span class="empty-state-icon">✓</span>
+            <h3>No tasks created yet</h3>
+            <p>Your first task will appear here.</p>
+          </div>
+        } @else {
+          <ul class="task-list">
+            @for (task of tasks(); track task.id) {
+              <li
+                class="task-item"
+                [class.task-item--completed]="task.isCompleted"
+              >
+                <div class="task-content">
+                  <div class="task-heading">
+                    <h3>{{ task.title }}</h3>
 
-          <p>
-            Tasks will appear here during the next Angular
-            iteration.
-          </p>
-        </div>
+                    <span
+                      class="task-state"
+                      [class.task-state--completed]="
+                        task.isCompleted
+                      "
+                      [class.task-state--open]="
+                        !task.isCompleted
+                      "
+                    >
+                      {{
+                        task.isCompleted
+                          ? 'Completed'
+                          : 'Open'
+                      }}
+                    </span>
+                  </div>
+
+                  @if (task.description) {
+                    <p class="task-description">
+                      {{ task.description }}
+                    </p>
+                  }
+
+                  <div class="task-meta">
+                    <span>{{ task.categoryName }}</span>
+                    <span>
+                      {{ formatDate(task.dueDateUtc) }}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
       </article>
 
       <aside class="panel categories-panel">
@@ -71,24 +147,9 @@
             <p>Loading categories...</p>
           </div>
         } @else if (error()) {
-          <div
-            class="category-placeholder category-error"
-            role="alert"
-          >
+          <div class="category-placeholder category-error">
             <span class="category-dot"></span>
-
-            <div>
-              <strong>Categories could not be loaded</strong>
-              <p>{{ error() }}</p>
-
-              <button
-                class="retry-button"
-                type="button"
-                (click)="loadCategories()"
-              >
-                Try again
-              </button>
-            </div>
+            <p>Categories are unavailable.</p>
           </div>
         } @else if (categories().length === 0) {
           <div class="category-placeholder">

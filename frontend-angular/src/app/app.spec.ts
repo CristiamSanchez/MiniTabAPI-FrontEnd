@@ -2,9 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { App } from './app';
 import { TaskCategoryService } from './core/services/task-category.service';
+import { TaskItemService } from './core/services/task-item.service';
 
 describe('App', () => {
   const taskCategoryServiceMock = {
+    getAll: () => of([]),
+  };
+
+  const taskItemServiceMock = {
     getAll: () => of([]),
   };
 
@@ -15,6 +20,10 @@ describe('App', () => {
         {
           provide: TaskCategoryService,
           useValue: taskCategoryServiceMock,
+        },
+        {
+          provide: TaskItemService,
+          useValue: taskItemServiceMock,
         },
       ],
     }).compileComponents();
@@ -71,5 +80,20 @@ describe('App', () => {
     ).toContain(
       'No categories have been created yet.',
     );
+  });
+
+  it('should render the empty tasks state', () => {
+    const fixture = TestBed.createComponent(App);
+
+    fixture.detectChanges();
+
+    const element =
+      fixture.nativeElement as HTMLElement;
+
+    expect(
+      element.querySelector(
+        '.tasks-panel .empty-state',
+      )?.textContent,
+    ).toContain('No tasks created yet');
   });
 });

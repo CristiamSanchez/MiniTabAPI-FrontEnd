@@ -6,8 +6,11 @@ import {
   signal,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { TaskCategoryService } from './core/services/task-category.service';
+import { TaskItemService } from './core/services/task-item.service';
 import type { TaskCategory } from './core/models/task-category';
+import type { TaskItem } from './core/models/task-item';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +22,17 @@ export class App implements OnInit {
   private readonly taskCategoryService =
     inject(TaskCategoryService);
 
+  private readonly taskItemService =
+    inject(TaskItemService);
+
   protected readonly appName = 'MiniTask';
   protected readonly frontendName = 'Angular';
 
   protected readonly categories =
     signal<TaskCategory[]>([]);
+
+  protected readonly tasks =
+    signal<TaskItem[]>([]);
 
   protected readonly isLoading = signal(true);
 
@@ -43,16 +52,22 @@ export class App implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadCategories();
+    this.loadDashboard();
   }
 
-  protected loadCategories(): void {
+  protected loadDashboard(): void {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.taskCategoryService.getAll().subscribe({
-      next: (categories) => {
+    forkJoin({
+      categories:
+        this.taskCategoryService.getAll(),
+      tasks:
+        this.taskItemService.getAll(),
+    }).subscribe({
+      next: ({ categories, tasks }) => {
         this.categories.set(categories);
+        this.tasks.set(tasks);
         this.isLoading.set(false);
       },
       error: (requestError: unknown) => {
@@ -65,7 +80,13 @@ export class App implements OnInit {
     });
   }
 
-  protected formatDate(value: string): string {
+  protected formatDate(
+    value: string | null,
+  ): string {
+    if (value === null) {
+      return 'No due date';
+    }
+
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
@@ -95,7 +116,7 @@ export class App implements OnInit {
       }
 
       return (
-        'Could not load categories. ' +
+        'Could not load the dashboard. ' +
         `Status: ${requestError.status}`
       );
     }
