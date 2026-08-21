@@ -45,6 +45,9 @@ export class App implements OnInit {
   protected readonly updatingTaskId =
     signal<string | null>(null);
 
+  protected readonly deletingTaskId =
+    signal<string | null>(null);
+
   protected readonly taskActionError =
     signal<string | null>(null);
 
@@ -135,6 +138,47 @@ export class App implements OnInit {
       });
   }
 
+    protected deleteTask(
+    task: TaskItem,
+  ): void {
+    const confirmed = window.confirm(
+      `Delete task "${task.title}"?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingTaskId.set(task.id);
+    this.taskActionError.set(null);
+
+    this.taskItemService
+      .delete(task.id)
+      .pipe(
+        finalize(() => {
+          this.deletingTaskId.set(null);
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.tasks.update((currentTasks) =>
+            currentTasks.filter(
+              (currentTask) =>
+                currentTask.id !== task.id,
+            ),
+          );
+        },
+        error: (requestError: unknown) => {
+          this.taskActionError.set(
+            this.getTaskDeleteErrorMessage(
+              requestError,
+            ),
+          );
+        },
+      });
+  }
+
+
   protected formatDate(
     value: string | null,
   ): string {
@@ -152,6 +196,39 @@ export class App implements OnInit {
     ).format(new Date(value));
   }
 
+    private getTaskDeleteErrorMessage(
+    requestError: unknown,
+  ): string {
+    if (
+      requestError instanceof
+      HttpErrorResponse
+    ) {
+      const problemDetail =
+        requestError.error?.detail;
+
+      if (
+        typeof problemDetail === 'string' &&
+        problemDetail.length > 0
+      ) {
+        return problemDetail;
+      }
+
+      if (requestError.status === 0) {
+        return (
+          'Could not connect to the MiniTask API. ' +
+          'Verify that the backend is running.'
+        );
+      }
+
+      return (
+        'Could not delete the task. ' +
+        `Status: ${requestError.status}`
+      );
+    }
+
+    return 'An unexpected error occurred.';
+  }
+  
   private getTaskActionErrorMessage(
     requestError: unknown,
   ): string {

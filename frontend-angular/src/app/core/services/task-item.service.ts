@@ -49,6 +49,14 @@ export class TaskItemService {
     );
   }
 
+    delete(
+    taskId: string,
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${taskId}`,
+    );
+  }
+  
   private changeState(
     taskId: string,
     action: 'complete' | 'reopen',

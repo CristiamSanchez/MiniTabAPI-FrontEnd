@@ -144,7 +144,8 @@
                       class="task-state-button"
                       type="button"
                       [disabled]="
-                        updatingTaskId() === task.id
+                        updatingTaskId() === task.id ||
+                        deletingTaskId() === task.id
                       "
                       (click)="changeTaskState(task)"
                     >
@@ -156,6 +157,24 @@
                         Reopen
                       } @else {
                         Complete
+                      }
+                    </button>
+
+                    <button
+                      class="task-delete-button"
+                      type="button"
+                      [disabled]="
+                        deletingTaskId() === task.id ||
+                        updatingTaskId() === task.id
+                      "
+                      (click)="deleteTask(task)"
+                    >
+                      @if (
+                        deletingTaskId() === task.id
+                      ) {
+                        Deleting...
+                      } @else {
+                        Delete
                       }
                     </button>
                   </div>

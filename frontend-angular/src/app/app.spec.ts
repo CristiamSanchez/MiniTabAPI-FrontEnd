@@ -11,6 +11,9 @@ describe('App', () => {
 
   const taskItemServiceMock = {
     getAll: () => of([]),
+    complete: () => of({}),
+    reopen: () => of({}),
+    delete: () => of(undefined),
   };
 
   beforeEach(async () => {
