@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { TaskCategoryService } from './core/services/task-category.service';
 import { TaskItemService } from './core/services/task-item.service';
 import type { TaskCategory } from './core/models/task-category';
@@ -27,6 +27,7 @@ export class App implements OnInit {
     inject(TaskItemService);
 
   protected readonly appName = 'MiniTask';
+
   protected readonly frontendName = 'Angular';
 
   protected readonly categories =
@@ -35,22 +36,30 @@ export class App implements OnInit {
   protected readonly tasks =
     signal<TaskItem[]>([]);
 
-  protected readonly isLoading = signal(true);
+  protected readonly isLoading =
+    signal(true);
 
   protected readonly error =
     signal<string | null>(null);
 
-  protected readonly connectionStatus = computed(() => {
-    if (this.isLoading()) {
-      return 'Connecting...';
-    }
+  protected readonly updatingTaskId =
+    signal<string | null>(null);
 
-    if (this.error()) {
-      return 'API unavailable';
-    }
+  protected readonly taskActionError =
+    signal<string | null>(null);
 
-    return 'API connected';
-  });
+  protected readonly connectionStatus =
+    computed(() => {
+      if (this.isLoading()) {
+        return 'Connecting...';
+      }
+
+      if (this.error()) {
+        return 'API unavailable';
+      }
+
+      return 'API connected';
+    });
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -82,12 +91,48 @@ export class App implements OnInit {
   }
 
   protected handleTaskCreated(
-  createdTask: TaskItem,
+    createdTask: TaskItem,
   ): void {
     this.tasks.update((currentTasks) => [
       createdTask,
       ...currentTasks,
     ]);
+  }
+
+  protected changeTaskState(
+    task: TaskItem,
+  ): void {
+    this.updatingTaskId.set(task.id);
+    this.taskActionError.set(null);
+
+    const request = task.isCompleted
+      ? this.taskItemService.reopen(task.id)
+      : this.taskItemService.complete(task.id);
+
+    request
+      .pipe(
+        finalize(() => {
+          this.updatingTaskId.set(null);
+        }),
+      )
+      .subscribe({
+        next: (updatedTask) => {
+          this.tasks.update((currentTasks) =>
+            currentTasks.map((currentTask) =>
+              currentTask.id === updatedTask.id
+                ? updatedTask
+                : currentTask,
+            ),
+          );
+        },
+        error: (requestError: unknown) => {
+          this.taskActionError.set(
+            this.getTaskActionErrorMessage(
+              requestError,
+            ),
+          );
+        },
+      });
   }
 
   protected formatDate(
@@ -97,17 +142,56 @@ export class App implements OnInit {
       return 'No due date';
     }
 
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(new Date(value));
+    return new Intl.DateTimeFormat(
+      'en-US',
+      {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      },
+    ).format(new Date(value));
+  }
+
+  private getTaskActionErrorMessage(
+    requestError: unknown,
+  ): string {
+    if (
+      requestError instanceof
+      HttpErrorResponse
+    ) {
+      const problemDetail =
+        requestError.error?.detail;
+
+      if (
+        typeof problemDetail === 'string' &&
+        problemDetail.length > 0
+      ) {
+        return problemDetail;
+      }
+
+      if (requestError.status === 0) {
+        return (
+          'Could not connect to the MiniTask API. ' +
+          'Verify that the backend is running.'
+        );
+      }
+
+      return (
+        'Could not update the task. ' +
+        `Status: ${requestError.status}`
+      );
+    }
+
+    return 'An unexpected error occurred.';
   }
 
   private getErrorMessage(
     requestError: unknown,
   ): string {
-    if (requestError instanceof HttpErrorResponse) {
+    if (
+      requestError instanceof
+      HttpErrorResponse
+    ) {
       const problemDetail =
         requestError.error?.detail;
 

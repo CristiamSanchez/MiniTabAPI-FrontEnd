@@ -46,7 +46,7 @@
       </section>
     }
 
-        @if (
+    @if (
       !isLoading() &&
       !error() &&
       categories().length > 0
@@ -72,6 +72,12 @@
             </span>
           }
         </div>
+
+        @if (taskActionError()) {
+          <p class="task-action-error" role="alert">
+            {{ taskActionError() }}
+          </p>
+        }
 
         @if (isLoading()) {
           <div class="empty-state">
@@ -127,9 +133,31 @@
 
                   <div class="task-meta">
                     <span>{{ task.categoryName }}</span>
+
                     <span>
                       {{ formatDate(task.dueDateUtc) }}
                     </span>
+                  </div>
+
+                  <div class="task-actions">
+                    <button
+                      class="task-state-button"
+                      type="button"
+                      [disabled]="
+                        updatingTaskId() === task.id
+                      "
+                      (click)="changeTaskState(task)"
+                    >
+                      @if (
+                        updatingTaskId() === task.id
+                      ) {
+                        Updating...
+                      } @else if (task.isCompleted) {
+                        Reopen
+                      } @else {
+                        Complete
+                      }
+                    </button>
                   </div>
                 </div>
               </li>

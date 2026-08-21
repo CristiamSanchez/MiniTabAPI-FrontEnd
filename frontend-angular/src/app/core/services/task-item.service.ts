@@ -30,4 +30,32 @@ export class TaskItemService {
       request,
     );
   }
+
+  complete(
+    taskId: string,
+  ): Observable<TaskItem> {
+    return this.changeState(
+      taskId,
+      'complete',
+    );
+  }
+
+  reopen(
+    taskId: string,
+  ): Observable<TaskItem> {
+    return this.changeState(
+      taskId,
+      'reopen',
+    );
+  }
+
+  private changeState(
+    taskId: string,
+    action: 'complete' | 'reopen',
+  ): Observable<TaskItem> {
+    return this.http.patch<TaskItem>(
+      `${this.apiUrl}/${taskId}/${action}`,
+      null,
+    );
+  }
 }
