@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import type {
   CreateTaskItemRequest,
   TaskItem,
+  UpdateTaskItemRequest,
 } from '../models/task-item';
 
 @Injectable({
@@ -31,6 +32,16 @@ export class TaskItemService {
     );
   }
 
+  update(
+    taskId: string,
+    request: UpdateTaskItemRequest,
+  ): Observable<TaskItem> {
+    return this.http.put<TaskItem>(
+      `${this.apiUrl}/${taskId}`,
+      request,
+    );
+  }
+
   complete(
     taskId: string,
   ): Observable<TaskItem> {
@@ -49,14 +60,14 @@ export class TaskItemService {
     );
   }
 
-    delete(
+  delete(
     taskId: string,
   ): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${taskId}`,
     );
   }
-  
+
   private changeState(
     taskId: string,
     action: 'complete' | 'reopen',

@@ -495,3 +495,30 @@
   outline: 3px solid rgb(225 29 72 / 25%);
   outline-offset: 2px;
 }
+.task-edit-button {
+  padding: 0.55rem 0.85rem;
+  color: #c2410c;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 0.65rem;
+}
+
+.task-edit-button:hover:not(:disabled) {
+  color: #ffffff;
+  background: #ea580c;
+  border-color: #ea580c;
+}
+
+.task-edit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.task-edit-button:focus-visible {
+  outline: 3px solid rgb(234 88 12 / 25%);
+  outline-offset: 2px;
+}

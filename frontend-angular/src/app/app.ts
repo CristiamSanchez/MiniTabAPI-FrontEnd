@@ -36,6 +36,9 @@ export class App implements OnInit {
   protected readonly tasks =
     signal<TaskItem[]>([]);
 
+  protected readonly editingTask =
+    signal<TaskItem | null>(null);
+
   protected readonly isLoading =
     signal(true);
 
@@ -102,6 +105,31 @@ export class App implements OnInit {
     ]);
   }
 
+    protected startTaskEdit(
+    task: TaskItem,
+  ): void {
+    this.taskActionError.set(null);
+    this.editingTask.set(task);
+  }
+
+  protected handleTaskUpdated(
+    updatedTask: TaskItem,
+  ): void {
+    this.tasks.update((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask.id === updatedTask.id
+          ? updatedTask
+          : currentTask,
+      ),
+    );
+
+    this.editingTask.set(null);
+  }
+
+  protected cancelTaskEdit(): void {
+    this.editingTask.set(null);
+  }
+
   protected changeTaskState(
     task: TaskItem,
   ): void {
@@ -160,13 +188,19 @@ export class App implements OnInit {
         }),
       )
       .subscribe({
-        next: () => {
+                next: () => {
           this.tasks.update((currentTasks) =>
             currentTasks.filter(
               (currentTask) =>
                 currentTask.id !== task.id,
             ),
           );
+
+          if (
+            this.editingTask()?.id === task.id
+          ) {
+            this.editingTask.set(null);
+          }
         },
         error: (requestError: unknown) => {
           this.taskActionError.set(

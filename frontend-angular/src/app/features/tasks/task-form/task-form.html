@@ -1,11 +1,25 @@
-<section class="task-form-panel">
+<section
+  class="task-form-panel"
+  [class.task-form-panel--editing]="isEditing()"
+>
   <div class="form-heading">
     <div>
-      <p class="form-label">New item</p>
-      <h2>Create a task</h2>
+      <p class="form-label">
+        {{ isEditing() ? 'Editing item' : 'New item' }}
+      </p>
+
+      <h2>
+        {{ isEditing() ? 'Edit task' : 'Create a task' }}
+      </h2>
     </div>
 
-    <p>Add something you want to complete.</p>
+    <p>
+      {{
+        isEditing()
+          ? 'Update the information for this task.'
+          : 'Add something you want to complete.'
+      }}
+    </p>
   </div>
 
   <form
@@ -102,16 +116,35 @@
     }
 
     <div class="form-actions">
+      @if (isEditing()) {
+        <button
+          class="cancel-button"
+          type="button"
+          [disabled]="isSubmitting()"
+          (click)="cancelEdit()"
+        >
+          Cancel
+        </button>
+      }
+
       <button
         class="submit-button"
         type="submit"
         [disabled]="isSubmitting()"
       >
-        {{
-          isSubmitting()
-            ? 'Creating...'
-            : 'Create task'
-        }}
+        @if (isSubmitting()) {
+          {{
+            isEditing()
+              ? 'Saving...'
+              : 'Creating...'
+          }}
+        } @else {
+          {{
+            isEditing()
+              ? 'Save changes'
+              : 'Create task'
+          }}
+        }
       </button>
     </div>
   </form>

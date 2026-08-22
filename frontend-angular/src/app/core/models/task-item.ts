@@ -16,3 +16,10 @@ export interface CreateTaskItemRequest {
   dueDateUtc: string | null;
   categoryId: string;
 }
+
+export interface UpdateTaskItemRequest {
+  title: string;
+  description: string | null;
+  dueDateUtc: string | null;
+  categoryId: string;
+}

@@ -51,9 +51,12 @@
       !error() &&
       categories().length > 0
     ) {
-      <app-task-form
+            <app-task-form
         [categories]="categories()"
+        [task]="editingTask()"
         (taskCreated)="handleTaskCreated($event)"
+        (taskUpdated)="handleTaskUpdated($event)"
+        (editCancelled)="cancelTaskEdit()"
       />
     }
 
@@ -158,6 +161,22 @@
                       } @else {
                         Complete
                       }
+                    </button>
+
+                    <button
+                      class="task-edit-button"
+                      type="button"
+                      [disabled]="
+                        updatingTaskId() === task.id ||
+                        deletingTaskId() === task.id
+                      "
+                      (click)="startTaskEdit(task)"
+                    >
+                      {{
+                        editingTask()?.id === task.id
+                          ? 'Editing'
+                          : 'Edit'
+                      }}
                     </button>
 
                     <button

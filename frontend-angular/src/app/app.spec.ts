@@ -11,6 +11,8 @@ describe('App', () => {
 
   const taskItemServiceMock = {
     getAll: () => of([]),
+    create: () => of({}),
+    update: () => of({}),
     complete: () => of({}),
     reopen: () => of({}),
     delete: () => of(undefined),
