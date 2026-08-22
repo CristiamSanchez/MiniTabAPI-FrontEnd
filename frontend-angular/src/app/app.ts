@@ -12,10 +12,11 @@ import { TaskItemService } from './core/services/task-item.service';
 import type { TaskCategory } from './core/models/task-category';
 import type { TaskItem } from './core/models/task-item';
 import { TaskForm } from './features/tasks/task-form/task-form';
+import { CategoryManager } from './features/categories/category-manager/category-manager';
 
 @Component({
   selector: 'app-root',
-  imports: [TaskForm],
+  imports: [  TaskForm,  CategoryManager,],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -128,6 +129,78 @@ export class App implements OnInit {
 
   protected cancelTaskEdit(): void {
     this.editingTask.set(null);
+  }
+
+    protected handleCategoryCreated(
+    createdCategory: TaskCategory,
+  ): void {
+    this.categories.update(
+      (currentCategories) =>
+        [...currentCategories, createdCategory]
+          .sort((first, second) =>
+            first.name.localeCompare(
+              second.name,
+            ),
+          ),
+    );
+  }
+
+  protected handleCategoryUpdated(
+    updatedCategory: TaskCategory,
+  ): void {
+    this.categories.update(
+      (currentCategories) =>
+        currentCategories
+          .map((currentCategory) =>
+            currentCategory.id ===
+            updatedCategory.id
+              ? updatedCategory
+              : currentCategory,
+          )
+          .sort((first, second) =>
+            first.name.localeCompare(
+              second.name,
+            ),
+          ),
+    );
+
+    this.tasks.update((currentTasks) =>
+      currentTasks.map((task) =>
+        task.categoryId === updatedCategory.id
+          ? {
+              ...task,
+              categoryName:
+                updatedCategory.name,
+            }
+          : task,
+      ),
+    );
+
+    const currentEditingTask =
+      this.editingTask();
+
+    if (
+      currentEditingTask?.categoryId ===
+      updatedCategory.id
+    ) {
+      this.editingTask.set({
+        ...currentEditingTask,
+        categoryName:
+          updatedCategory.name,
+      });
+    }
+  }
+
+  protected handleCategoryDeleted(
+    categoryId: string,
+  ): void {
+    this.categories.update(
+      (currentCategories) =>
+        currentCategories.filter(
+          (category) =>
+            category.id !== categoryId,
+        ),
+    );
   }
 
   protected changeTaskState(
@@ -262,7 +335,7 @@ export class App implements OnInit {
 
     return 'An unexpected error occurred.';
   }
-  
+
   private getTaskActionErrorMessage(
     requestError: unknown,
   ): string {

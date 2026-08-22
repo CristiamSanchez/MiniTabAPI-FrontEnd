@@ -205,19 +205,6 @@
       </article>
 
       <aside class="panel categories-panel">
-        <div class="panel-header">
-          <div>
-            <p class="panel-label">Organization</p>
-            <h2>Categories</h2>
-          </div>
-
-          @if (!isLoading() && !error()) {
-            <span class="counter-badge">
-              {{ categories().length }}
-            </span>
-          }
-        </div>
-
         @if (isLoading()) {
           <div class="category-placeholder">
             <span class="category-dot"></span>
@@ -228,31 +215,19 @@
             <span class="category-dot"></span>
             <p>Categories are unavailable.</p>
           </div>
-        } @else if (categories().length === 0) {
-          <div class="category-placeholder">
-            <span class="category-dot"></span>
-            <p>No categories have been created yet.</p>
-          </div>
         } @else {
-          <ul class="category-list">
-            @for (
-              category of categories();
-              track category.id
-            ) {
-              <li class="category-item">
-                <span class="category-dot"></span>
-
-                <div>
-                  <strong>{{ category.name }}</strong>
-
-                  <small>
-                    Created
-                    {{ formatDate(category.createdAtUtc) }}
-                  </small>
-                </div>
-              </li>
-            }
-          </ul>
+          <app-category-manager
+            [categories]="categories()"
+            (categoryCreated)="
+              handleCategoryCreated($event)
+            "
+            (categoryUpdated)="
+              handleCategoryUpdated($event)
+            "
+            (categoryDeleted)="
+              handleCategoryDeleted($event)
+            "
+          />
         }
       </aside>
     </section>

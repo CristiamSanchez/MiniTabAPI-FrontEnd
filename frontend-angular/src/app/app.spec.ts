@@ -5,8 +5,11 @@ import { TaskCategoryService } from './core/services/task-category.service';
 import { TaskItemService } from './core/services/task-item.service';
 
 describe('App', () => {
-  const taskCategoryServiceMock = {
+    const taskCategoryServiceMock = {
     getAll: () => of([]),
+    create: () => of({}),
+    update: () => of({}),
+    delete: () => of(undefined),
   };
 
   const taskItemServiceMock = {
@@ -80,7 +83,7 @@ describe('App', () => {
 
     expect(
       element.querySelector(
-        '.category-placeholder',
+        '.empty-categories',
       )?.textContent,
     ).toContain(
       'No categories have been created yet.',

@@ -3,3 +3,11 @@ export interface TaskCategory {
   name: string;
   createdAtUtc: string;
 }
+
+export interface CreateTaskCategoryRequest {
+  name: string;
+}
+
+export interface UpdateTaskCategoryRequest {
+  name: string;
+}

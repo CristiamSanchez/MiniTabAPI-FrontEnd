@@ -1,0 +1,149 @@
+<section class="category-manager">
+  <div class="manager-header">
+    <div>
+      <p class="manager-label">Organization</p>
+      <h2>Categories</h2>
+    </div>
+
+    <span class="category-counter">
+      {{ categories().length }}
+    </span>
+  </div>
+
+  <form
+    class="category-form"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <label>
+      <span>
+        {{
+          editingCategory()
+            ? 'Category name'
+            : 'New category'
+        }}
+      </span>
+
+      <input
+        type="text"
+        formControlName="name"
+        maxlength="80"
+        placeholder="Example: Personal"
+      />
+    </label>
+
+    @if (
+      form.controls.name.touched &&
+      form.controls.name.hasError('required')
+    ) {
+      <small class="field-error">
+        Category name is required.
+      </small>
+    }
+
+    @if (
+      form.controls.name.touched &&
+      form.controls.name.hasError('maxlength')
+    ) {
+      <small class="field-error">
+        Category name cannot exceed 80 characters.
+      </small>
+    }
+
+    <div class="form-actions">
+      @if (editingCategory()) {
+        <button
+          class="cancel-button"
+          type="button"
+          [disabled]="isSubmitting()"
+          (click)="cancelEdit()"
+        >
+          Cancel
+        </button>
+      }
+
+      <button
+        class="save-button"
+        type="submit"
+        [disabled]="isSubmitting()"
+      >
+        @if (isSubmitting()) {
+          {{
+            editingCategory()
+              ? 'Saving...'
+              : 'Creating...'
+          }}
+        } @else {
+          {{
+            editingCategory()
+              ? 'Save'
+              : 'Add category'
+          }}
+        }
+      </button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="manager-error" role="alert">
+      {{ error() }}
+    </p>
+  }
+
+  @if (categories().length === 0) {
+    <div class="empty-categories">
+      <span class="category-dot"></span>
+      <p>No categories have been created yet.</p>
+    </div>
+  } @else {
+    <ul class="category-list">
+      @for (
+        category of categories();
+        track category.id
+      ) {
+        <li class="category-item">
+          <span class="category-dot"></span>
+
+          <div class="category-information">
+            <strong>{{ category.name }}</strong>
+
+            <small>
+              Created
+              {{ formatDate(category.createdAtUtc) }}
+            </small>
+          </div>
+
+          <div class="category-actions">
+            <button
+              class="edit-button"
+              type="button"
+              [disabled]="
+                deletingCategoryId() === category.id
+              "
+              (click)="startEdit(category)"
+            >
+              Edit
+            </button>
+
+            <button
+              class="delete-button"
+              type="button"
+              [disabled]="
+                deletingCategoryId() === category.id
+              "
+              (click)="deleteCategory(category)"
+            >
+              @if (
+                deletingCategoryId() === category.id
+              ) {
+                Deleting...
+              } @else {
+                Delete
+              }
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
