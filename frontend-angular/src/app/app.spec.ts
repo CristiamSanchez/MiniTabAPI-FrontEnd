@@ -104,4 +104,45 @@ describe('App', () => {
       )?.textContent,
     ).toContain('No tasks created yet');
   });
+
+    it('should toggle and persist dark mode', () => {
+    window.localStorage.setItem(
+      'minitask-angular-theme',
+      'light',
+    );
+
+    const fixture = TestBed.createComponent(App);
+
+    fixture.detectChanges();
+
+    const element =
+      fixture.nativeElement as HTMLElement;
+
+    const button =
+      element.querySelector<HTMLButtonElement>(
+        '.theme-toggle',
+      );
+
+    expect(button).not.toBeNull();
+
+    button?.click();
+    fixture.detectChanges();
+
+    expect(
+      document.documentElement.getAttribute(
+        'data-theme',
+      ),
+    ).toBe('dark');
+
+    expect(
+      window.localStorage.getItem(
+        'minitask-angular-theme',
+      ),
+    ).toBe('dark');
+
+    window.localStorage.removeItem(
+      'minitask-angular-theme',
+    );
+  });
+  
 });

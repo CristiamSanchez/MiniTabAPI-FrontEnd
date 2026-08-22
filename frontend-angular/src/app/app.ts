@@ -9,6 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, forkJoin } from 'rxjs';
 import { TaskCategoryService } from './core/services/task-category.service';
 import { TaskItemService } from './core/services/task-item.service';
+import { ThemeService } from './core/services/theme.service';
 import type { TaskCategory } from './core/models/task-category';
 import type { TaskItem } from './core/models/task-item';
 import { TaskForm } from './features/tasks/task-form/task-form';
@@ -16,7 +17,10 @@ import { CategoryManager } from './features/categories/category-manager/category
 
 @Component({
   selector: 'app-root',
-  imports: [  TaskForm,  CategoryManager,],
+  imports: [
+    TaskForm,
+    CategoryManager,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -27,9 +31,15 @@ export class App implements OnInit {
   private readonly taskItemService =
     inject(TaskItemService);
 
+  private readonly themeService =
+    inject(ThemeService);
+
   protected readonly appName = 'MiniTask';
 
   protected readonly frontendName = 'Angular';
+
+  protected readonly isDarkMode =
+    this.themeService.isDarkMode;
 
   protected readonly categories =
     signal<TaskCategory[]>([]);
@@ -72,6 +82,10 @@ export class App implements OnInit {
     this.loadDashboard();
   }
 
+  protected toggleTheme(): void {
+    this.themeService.toggle();
+  }
+
   protected loadDashboard(): void {
     this.isLoading.set(true);
     this.error.set(null);
@@ -106,7 +120,7 @@ export class App implements OnInit {
     ]);
   }
 
-    protected startTaskEdit(
+  protected startTaskEdit(
     task: TaskItem,
   ): void {
     this.taskActionError.set(null);
@@ -131,17 +145,19 @@ export class App implements OnInit {
     this.editingTask.set(null);
   }
 
-    protected handleCategoryCreated(
+  protected handleCategoryCreated(
     createdCategory: TaskCategory,
   ): void {
     this.categories.update(
       (currentCategories) =>
-        [...currentCategories, createdCategory]
-          .sort((first, second) =>
-            first.name.localeCompare(
-              second.name,
-            ),
+        [
+          ...currentCategories,
+          createdCategory,
+        ].sort((first, second) =>
+          first.name.localeCompare(
+            second.name,
           ),
+        ),
     );
   }
 
@@ -239,7 +255,7 @@ export class App implements OnInit {
       });
   }
 
-    protected deleteTask(
+  protected deleteTask(
     task: TaskItem,
   ): void {
     const confirmed = window.confirm(
@@ -261,7 +277,7 @@ export class App implements OnInit {
         }),
       )
       .subscribe({
-                next: () => {
+        next: () => {
           this.tasks.update((currentTasks) =>
             currentTasks.filter(
               (currentTask) =>
@@ -285,7 +301,6 @@ export class App implements OnInit {
       });
   }
 
-
   protected formatDate(
     value: string | null,
   ): string {
@@ -303,7 +318,7 @@ export class App implements OnInit {
     ).format(new Date(value));
   }
 
-    private getTaskDeleteErrorMessage(
+  private getTaskDeleteErrorMessage(
     requestError: unknown,
   ): string {
     if (

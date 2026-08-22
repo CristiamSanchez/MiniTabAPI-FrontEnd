@@ -9,12 +9,39 @@
       </span>
     </a>
 
-    <span
-      class="status-badge"
-      [class.status-badge--error]="error() !== null"
-    >
-      {{ connectionStatus() }}
-    </span>
+    <div class="header-actions">
+      <span
+        class="status-badge"
+        [class.status-badge--error]="
+          error() !== null
+        "
+      >
+        {{ connectionStatus() }}
+      </span>
+
+      <button
+        class="theme-toggle"
+        type="button"
+        [attr.aria-pressed]="isDarkMode()"
+        [attr.aria-label]="
+          isDarkMode()
+            ? 'Activate light mode'
+            : 'Activate dark mode'
+        "
+        (click)="toggleTheme()"
+      >
+        <span
+          class="theme-toggle-icon"
+          aria-hidden="true"
+        >
+          {{ isDarkMode() ? '☀' : '☾' }}
+        </span>
+
+        <span class="theme-toggle-text">
+          {{ isDarkMode() ? 'Light' : 'Dark' }}
+        </span>
+      </button>
+    </div>
   </header>
 
   <main class="app-content">
