@@ -1,59 +1,275 @@
-# MinitaskAngular
+# MiniTask Angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.5.
+Angular frontend for the MiniTask task management application.
 
-## Development server
+This application consumes the MiniTask .NET API and shares the same PostgreSQL database used by the React frontend.
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
+### Tasks
+
+- Load tasks from the API.
+- Create tasks with Reactive Forms.
+- Edit task information.
+- Select a category.
+- Add optional descriptions and due dates.
+- Complete and reopen tasks.
+- Delete tasks with confirmation.
+- Update the interface without reloading.
+
+### Categories
+
+- Load categories from the API.
+- Create categories.
+- Rename categories.
+- Delete unused categories.
+- Display backend conflicts when a category contains tasks.
+- Synchronize renamed categories with tasks and forms.
+
+### Interface
+
+- Responsive teal and orange design.
+- Loading, empty, success, and error states.
+- API connection indicator.
+- Client-side validation.
+- Persistent light and dark modes.
+- System theme detection.
+- Theme preference stored in `localStorage`.
+
+## Technology stack
+
+- Angular 22
+- Angular CLI 22
+- TypeScript 6
+- RxJS
+- Angular HttpClient
+- Reactive Forms
+- Signals and computed state
+- Modern `@if` and `@for` syntax
+- Vitest
+- CSS
+
+## Project structure
+
+```text
+src/
+├── app/
+│   ├── core/
+│   │   ├── models/
+│   │   │   ├── task-category.ts
+│   │   │   └── task-item.ts
+│   │   └── services/
+│   │       ├── task-category.service.ts
+│   │       ├── task-item.service.ts
+│   │       └── theme.service.ts
+│   ├── features/
+│   │   ├── categories/
+│   │   │   └── category-manager/
+│   │   └── tasks/
+│   │       └── task-form/
+│   ├── app.config.ts
+│   ├── app.html
+│   ├── app.css
+│   ├── app.spec.ts
+│   └── app.ts
+├── environments/
+│   ├── environment.ts
+│   └── environment.development.ts
+├── index.html
+├── main.ts
+└── styles.css
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Main Angular concepts
 
-## Code scaffolding
+### Services
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+HTTP communication is isolated in services:
 
-```bash
-ng generate component component-name
+- `TaskItemService`
+- `TaskCategoryService`
+
+The components do not construct API URLs directly.
+
+### Signals
+
+The application uses signals for frontend state, including:
+
+- Tasks.
+- Categories.
+- Loading state.
+- API errors.
+- Selected task for editing.
+- Task operations.
+- Current color theme.
+
+### Reactive Forms
+
+Reactive Forms provide:
+
+- Required-field validation.
+- Maximum-length validation.
+- Create and edit modes.
+- Disabled submission states.
+- API error feedback.
+
+### Component communication
+
+Feature components receive data through signal inputs and notify `App` through outputs.
+
+Examples:
+
+- `TaskForm` emits created and updated tasks.
+- `CategoryManager` emits created, updated, and deleted categories.
+
+### Theme service
+
+`ThemeService`:
+
+- Detects the operating-system theme.
+- Applies `data-theme` to the root HTML element.
+- Switches between light and dark mode.
+- Stores the selected theme in `localStorage`.
+
+Storage key:
+
+```text
+minitask-angular-theme
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Requirements
+
+Use the Node.js version configured in the repository root:
 
 ```bash
-ng generate --help
+nvm install
+nvm use
 ```
 
-## Building
-
-To build the project run:
+Install Angular dependencies from the repository root:
 
 ```bash
-ng build
+npm --prefix frontend-angular install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Alternatively, from this directory:
 
 ```bash
-ng test
+npm install
 ```
 
-## Running end-to-end tests
+## API configuration
 
-For end-to-end (e2e) testing, run:
+Development API configuration is located in:
+
+```text
+src/environments/environment.development.ts
+```
+
+Default API address:
+
+```text
+http://localhost:5281
+```
+
+The production configuration is located in:
+
+```text
+src/environments/environment.ts
+```
+
+Do not place passwords or private credentials in Angular environment files. Browser applications cannot securely hide embedded secrets.
+
+## Run locally
+
+### API
+
+From the repository root:
 
 ```bash
-ng e2e
+docker compose up -d
+dotnet run --project src/MiniTask.API
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Angular
 
-## Additional Resources
+From the repository root:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```bash
+npm --prefix frontend-angular start
+```
+
+Or from `frontend-angular/`:
+
+```bash
+npm start
+```
+
+Open:
+
+```text
+http://localhost:4200
+```
+
+## Production build
+
+From the repository root:
+
+```bash
+npm --prefix frontend-angular run build
+```
+
+Build output:
+
+```text
+frontend-angular/dist/minitask-angular/
+```
+
+## Unit tests
+
+From the repository root:
+
+```bash
+npm --prefix frontend-angular test -- --watch=false
+```
+
+Or from `frontend-angular/`:
+
+```bash
+npm test -- --watch=false
+```
+
+Tests use Vitest through the Angular build system.
+
+## Angular CLI
+
+Generate a component from `frontend-angular/`:
+
+```bash
+npx ng generate component features/example/example-component
+```
+
+Generate a service:
+
+```bash
+npx ng generate service core/services/example
+```
+
+## Development addresses
+
+| Service | Address |
+|---|---|
+| MiniTask API | `http://localhost:5281` |
+| Angular frontend | `http://localhost:4200` |
+| React frontend | `http://localhost:5173` |
+
+## Related documentation
+
+See the root [`README.md`](../README.md) for:
+
+- Backend architecture.
+- PostgreSQL configuration.
+- Docker instructions.
+- API endpoints.
+- React instructions.
+- Complete project setup.
